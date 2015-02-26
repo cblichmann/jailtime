@@ -1,0 +1,11 @@
+# Basic shell
+include otherfile
+
+/dev/pts/
+/var/lib/{mysql,postgresql}/
+
+/bin/bash
+/bin/ls
+/bin/sh -> /bin/bash
+
+run echo 'test'
