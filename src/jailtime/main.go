@@ -35,8 +35,8 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path"
 	"regexp"
-	"strings"
 )
 
 const (
@@ -87,10 +87,15 @@ func processCommandLine() {
 	}
 }
 
+var (
+	loaderRe = regexp.MustCompile("^\\s*" + LoaderExecutable +
+		"\\s+\\(0x[[:xdigit:]]+\\)\\s*$")
+	depRe = regexp.MustCompile("^.*\\s=>\\s+(.*)\\s+\\(0x[[:xdigit:]]+\\)\\s*$")
+)
+
 func importedLibraries(binary string) (deps []string, err error) {
 	// Do not wait for the loader to return an error on non-existing files.
-	_, err = os.Stat(binary)
-	if os.IsNotExist(err) {
+	if _, err = os.Stat(binary); os.IsNotExist(err) {
 		return
 	}
 	cmd := exec.Command(LoaderExecutable, "--list", binary)
@@ -111,144 +116,60 @@ func importedLibraries(binary string) (deps []string, err error) {
 		} else if err != nil {
 			return
 		}
-		parts := strings.SplitN(line, "=>", 2)
-		if len(parts) != 2 {
-			continue
+		if m := depRe.FindStringSubmatch(line); m != nil {
+			if len(m[1]) > 0 {
+				deps = append(deps, m[1])
+			}
+		} else if loaderRe.FindStringSubmatch(line) == nil {
+			fatalln("bug: OS loader returned unexpected formt")
 		}
-		parts = strings.SplitN(parts[1], "(", 2)
-		if len(parts) != 2 {
-			fatalln("bug: OS loader returned unexpected format")
-		}
-		deps = append(deps, strings.TrimSpace(parts[0]))
 	}
 	err = cmd.Wait()
 	return
 }
 
-type SpecStatementType int
-
-const (
-	RegularFile = iota
-	Directory
-	SymLink
-	HardLink
-	Run
-)
-
-type specStatement struct {
-	Type SpecStatementType
-
-	// Multiple paths only valid for Directory type
-	Path []string
-
-	// For SymLink and HardLink types this specifies the link target, for
-	// RegularFile this specifies the destination in the chroot, for the
-	// Run type this is the command to run from outside the chroot with the
-	// working directory set to the chroot. Invalid for type Directory.
-	Target string
-
-	// File attributes, not valid for type Run. If not specified in the spec,
-	// These default to root:root with mode 0755 for type Directory and
-	// root:root with mode 0644 for RegularFile, SymLink and HardLink.
-	Uid  int
-	Gid  int
-	Mode int
-}
-
-type SpecFile []specStatement
-
-func (s *SpecFile) parseSpecLine(filename string, lineNo int, line string,
-	includeDepth int) (*specStatement, error) {
-	// Always strip white-space
-	line = strings.TrimSpace(line)
-
-	// Always skip blank lines and lines with single-line comments
-	if len(line) == 0 || strings.HasPrefix(line, "#") {
-		return nil, nil
-	}
-
-	// Handle directives
-	dirRe := regexp.MustCompile("^\\s*(include|run)\\s+(.+)$")
-	if m := dirRe.FindStringSubmatch(line); len(m) > 0 {
-		switch m[1] {
-		case "include":
-			if err := s.parseFromFile(m[2], includeDepth+1); err != nil {
-				return nil, err
-			}
-		case "run":
-			return &specStatement{Type: Run, Target: m[2]}, nil
-		}
-	}
-
-	re := regexp.MustCompile("^(.*)\\s*(->|=>)\\s*(.*)$")
-	if m := re.FindStringSubmatch(line); len(m) > 0 {
-		fmt.Printf("L|%s|%d\n", strings.Join(m, "|"), len(m))
-		return nil, nil
-	}
-
-	re2 := regexp.MustCompile("^(.*)({[^}]+})?(.*)/$")
-	if m := re2.FindStringSubmatch(line); len(m) > 0 {
-		fmt.Printf("D|%s|%d\n", strings.Join(m, "|"), len(m))
-		return nil, nil
-	}
-
-	fmt.Printf("%s:%d: %s\n", filename, lineNo, strings.TrimSpace(line))
-	return nil, nil
-}
-
-func (s *SpecFile) parseFromFile(filename string, includeDepth int) error {
-	if includeDepth > 8 {
-		return fmt.Errorf("nesting level too deep while including: %s",
-			filename)
-	}
-
-	f, err := os.Open(filename)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	r := bufio.NewReader(f)
-	var line string
-	lineNo := 0
-	for {
-		line, err = r.ReadString('\n')
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			return err
-		}
-		lineNo++
-		_, err := s.parseSpecLine(filename, lineNo, line, includeDepth)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func OpenSpec(filename string) (SpecFile, error) {
-	s := SpecFile{}
-	if err := s.parseFromFile(filename, 0 /* Depth */); err != nil {
-		return nil, err
-	}
-	return s, nil
-}
-
 func main() {
 	processCommandLine()
 
-	_, err := OpenSpec("basic_shell")
+	spec, err := OpenSpec("basic_shell")
 	if err != nil {
 		fatalln(err)
 	}
+	chrootDir := path.Clean("./chroot")
 
-	//	deps, err := importedLibraries("/bin/bash")
-	//	if err != nil {
-	//		fatalln(err)
-	//	}
-	//
-	//	for _, d := range deps {
-	//		fmt.Println(d)
-	//	}
+	dirsToCreate := make(map[string]bool)
+	filesToCopy := make(map[string]bool)
+	for _, s := range spec {
+		fmt.Println(s)
+		switch s.Type {
+		case RegularFile:
+			sourcePath := s.Path[0]
+			deps, err := importedLibraries(sourcePath)
+			if err != nil {
+				fatalln(err)
+			}
+			targetPath := path.Join(chrootDir, path.Dir(s.Target))
+			dirsToCreate[targetPath] = true
+			//fmt.Printf("mkdir -p %s\n", targetPath)
+			//os.MkdirAll(targetPath, 0755)
+			//fmt.Printf("cp %s %s/\n", sourcePath, targetPath)
+			filesToCopy[sourcePath] = true
+			for _, d := range deps {
+				fmt.Println(d)
+				depPath := path.Join(chrootDir, path.Dir(d))
+				dirsToCreate[depPath] = true
+				//fmt.Printf("mkdir -p %s\n", depPath)
+				//fmt.Printf("cp %s %s/\n", d, depPath)
+				filesToCopy[d] = true
+			}
+		}
+	}
+	fmt.Println("-------")
+	for k, _ := range dirsToCreate {
+		fmt.Println(k)
+	}
+	fmt.Println("-------")
+	for k, _ := range filesToCopy {
+		fmt.Println(k)
+	}
 }
