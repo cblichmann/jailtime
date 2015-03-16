@@ -1,7 +1,11 @@
 # Basic shell
 include otherfile
 
+# Example data file (non-executable)
+/initrd.img
+
 /dev/pts/
+/dev/console c 5 1
 /var/lib/{mysql,postgresql}/
 
 /bin/bash

@@ -1,5 +1,3 @@
-// +build linux !windows !cgo
-
 /*
  * jailtime version 0.1
  * Copyright (c)2015 Christian Blichmann
@@ -29,14 +27,12 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
-	"io"
+	"jailtime/loader"
+	"jailtime/spec"
 	"os"
-	"os/exec"
 	"path"
-	"regexp"
 )
 
 const (
@@ -47,7 +43,7 @@ const (
 var (
 	help    = flag.Bool("help", false, "display this help and exit")
 	version = flag.Bool("version", false, "display version and exit")
-	link    = flag.Bool("link", false, "hard ling files instead of copying")
+	link    = flag.Bool("link", false, "hard link files instead of copying")
 	verbose = flag.Bool("verbose", false, "explain what is being done")
 )
 
@@ -87,89 +83,78 @@ func processCommandLine() {
 	}
 }
 
-var (
-	loaderRe = regexp.MustCompile("^\\s*" + LoaderExecutable +
-		"\\s+\\(0x[[:xdigit:]]+\\)\\s*$")
-	depRe = regexp.MustCompile("^.*\\s=>\\s+(.*)\\s+\\(0x[[:xdigit:]]+\\)\\s*$")
-)
+//func expand(j *spec.JailSpec) ([]*spec.Statement, error) {
+//	for _, s := range j {
+//	}
+//	return
+//}
 
-func importedLibraries(binary string) (deps []string, err error) {
-	// Do not wait for the loader to return an error on non-existing files.
-	if _, err = os.Stat(binary); os.IsNotExist(err) {
-		return
-	}
-	cmd := exec.Command(LoaderExecutable, "--list", binary)
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		return
-	}
-	if err = cmd.Start(); err != nil {
-		return
-	}
-	r := bufio.NewReader(stdout)
-	deps = make([]string, 0, 10)
-	var line string
-	for {
-		line, err = r.ReadString('\n')
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			return
-		}
-		if m := depRe.FindStringSubmatch(line); m != nil {
-			if len(m[1]) > 0 {
-				deps = append(deps, m[1])
-			}
-		} else if loaderRe.FindStringSubmatch(line) == nil {
-			fatalln("bug: OS loader returned unexpected formt")
-		}
-	}
-	err = cmd.Wait()
-	return
+func apply(j *spec.JailSpec, targetChroot string) error {
+	return nil
 }
 
 func main() {
 	processCommandLine()
 
-	spec, err := OpenSpec("basic_shell")
+	sp, err := spec.Parse("basic_shell")
 	if err != nil {
 		fatalln(err)
 	}
-	chrootDir := path.Clean("./chroot")
+	//chrootDir := path.Clean("./chroot")
 
-	dirsToCreate := make(map[string]bool)
-	filesToCopy := make(map[string]bool)
-	for _, s := range spec {
-		fmt.Println(s)
+	todo := make(map[string]*spec.Statement) // Target => Source
+	toRun := make([]string, 0, 10)
+	for _, s := range sp {
 		switch s.Type {
-		case RegularFile:
-			sourcePath := s.Path[0]
-			deps, err := importedLibraries(sourcePath)
+		case spec.RegularFile:
+			deps, err := loader.ImportedLibraries(s.Source)
 			if err != nil {
 				fatalln(err)
 			}
-			targetPath := path.Join(chrootDir, path.Dir(s.Target))
-			dirsToCreate[targetPath] = true
-			//fmt.Printf("mkdir -p %s\n", targetPath)
-			//os.MkdirAll(targetPath, 0755)
-			//fmt.Printf("cp %s %s/\n", sourcePath, targetPath)
-			filesToCopy[sourcePath] = true
+			targetDir := path.Dir(s.Target)
+			todo[targetDir] = &spec.Statement{
+				Type:   spec.Directory,
+				Target: s.Target,
+				FileAttr: spec.FileAttr{
+					Uid:  s.FileAttr.Uid,
+					Gid:  s.FileAttr.Gid,
+					Mode: s.FileAttr.Mode | 0111 /* ugo+x */}}
+			todo[s.Target] = &s
+
 			for _, d := range deps {
-				fmt.Println(d)
-				depPath := path.Join(chrootDir, path.Dir(d))
-				dirsToCreate[depPath] = true
-				//fmt.Printf("mkdir -p %s\n", depPath)
-				//fmt.Printf("cp %s %s/\n", d, depPath)
-				filesToCopy[d] = true
+				targetDir = path.Dir(d)
+				// TODO(cblichmann): Copy mode from dependencies' dir and file.
+				todo[targetDir] = &spec.Statement{
+					Type:   spec.Directory,
+					Target: targetDir,
+					FileAttr: spec.FileAttr{
+						Uid:  0,
+						Gid:  0,
+						Mode: 0755}}
+				todo[d] = &spec.Statement{
+					Type:   spec.RegularFile,
+					Source: d,
+					Target: d,
+					FileAttr: spec.FileAttr{
+						Uid:  0,
+						Gid:  0,
+						Mode: 0644}}
 			}
+		case spec.Device:
+			fallthrough
+		case spec.Directory:
+			fallthrough
+		case spec.SymLink:
+			fallthrough
+		case spec.HardLink:
+			todo[s.Source] = &s
+
+		case spec.Run:
+			toRun = append(toRun, s.Target)
 		}
 	}
-	fmt.Println("-------")
-	for k, _ := range dirsToCreate {
-		fmt.Println(k)
-	}
-	fmt.Println("-------")
-	for k, _ := range filesToCopy {
+
+	for k, _ := range todo {
 		fmt.Println(k)
 	}
 }

@@ -10,7 +10,7 @@ this_dir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 # Source Configuration {
 go_packages = \
-	jailtime
+	jailtime/jailtime
 # } Source Configuration
 
 # Directories
