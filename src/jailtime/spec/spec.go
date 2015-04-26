@@ -2,7 +2,7 @@
  * jailtime version 0.1
  * Copyright (c)2015 Christian Blichmann
  *
- * Chroot specification file parser
+ * Chroot specification
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -26,186 +26,99 @@
 
 package spec
 
-import (
-	"bufio"
-	"fmt"
-	"io"
-	"os"
-	"regexp"
-	"strconv"
-	"strings"
-)
+type Statement interface{}
 
-type StatementType int
-
-const (
-	RegularFile = iota
-	Device      // TODO(cblichmann): Not implemented
-	Directory
-	SymLink
-	HardLink
-	Run
-)
-
+// General file attributes: if these are not specified in the spec, these will
+// default to root:root with mode 0755 for type Directory and root:root with
+// mode 0644 for RegularFile, Device and Link.
 type FileAttr struct {
-	Uid  int
-	Gid  int
-	Mode int
+	Uid  int // User id
+	Gid  int // Group id
+	Mode int // File mode
 }
 
-type DeviceAttr struct {
+type RegularFile struct {
+	Source string // Source file outside the chroot
+	Target string // Target inside the chroot
+	*FileAttr
+}
+
+type Device struct {
+	Target string // Target inside the chroot
+	*FileAttr
 	Type  int
 	Major int
 	Minor int
 }
 
-type Statement struct {
-	Type StatementType
-
-	// Source path. Unset for types Run and Device.
-	Source string
-
-	// For SymLink and HardLink types this specifies the link target, for
-	// RegularFile and Device this specifies the destination in the chroot, for
-	// the Run type this is the command to run from outside the chroot with the
-	// working directory set to the chroot. Invalid for type Directory.
-	Target string
-
-	// File attributes, not valid for type Run. If not specified in the spec,
-	// these default to root:root with mode 0755 for type Directory and
-	// root:root with mode 0644 for RegularFile, SymLink and HardLink.
-	FileAttr
-
-	// Specifies the major and minor number for a device file to create. Valid
-	// for type Device only.
-	DeviceAttr
+type Directory struct {
+	Target string // Target inside the chroot
+	*FileAttr
 }
 
-type JailSpec []Statement
-
-var (
-	// TODO(cblichmann): Replace regexp matching with custom parsing code to
-	//                   enable better error reporting.
-	// Directives:
-	//   include /some/file
-	//   run echo 'test'
-	directivesRe = regexp.MustCompile("^(include|run)\\s+(.+)$")
-
-	// Links:
-	//   /path/symlink_name -> /bin/bash
-	//   /path/hardlink => /bin/bash
-	linkRe = regexp.MustCompile("^(.*)\\s*(->|=>)\\s*(.*)$")
-
-	// Directories:
-	//   /some/dir/
-	//   /var/lib/{all,of,these}/
-	dirRe = regexp.MustCompile("^([^{]+)(?:{([^}]+)})?(.*)/$")
-
-	// Device files:
-	//  /dev/console c 5 1
-	devRe = regexp.MustCompile("^(.*)\\s+([cbup])\\s+(\\d+)\\s+(\\d+)$")
-
-	// Regular files:
-	//  /usr/bin/python
-	fileRe = regexp.MustCompile("^(.*?)(?:\\s+(.*))?$")
-)
-
-func (j *JailSpec) parseSpecLine(filename string, lineNo int, line string,
-	includeDepth int) (results []Statement, err error) {
-	// Always strip white-space
-	line = strings.TrimSpace(line)
-
-	// Always skip blank lines and lines with single-line comments
-	if len(line) == 0 || strings.HasPrefix(line, "#") {
-		return
-	}
-
-	results = make([]Statement, 1)
-	r := &results[0]
-
-	if m := directivesRe.FindStringSubmatch(line); m != nil {
-		switch m[1] {
-		case "include":
-			results = nil
-			err = j.parseFromFile(m[2], includeDepth+1)
-		case "run":
-			*r = Statement{Type: Run, Target: m[2]}
-		}
-	} else if m := linkRe.FindStringSubmatch(line); m != nil {
-		*r = Statement{
-			Source: strings.TrimSpace(m[1]),
-			Target: m[3]}
-		if m[2] == "->" {
-			r.Type = SymLink
-		} else {
-			r.Type = HardLink
-		}
-	} else if m := dirRe.FindStringSubmatch(line); m != nil {
-		comps := strings.Split(m[2], ",")
-		results = make([]Statement, len(comps))
-		for i, comp := range comps {
-			results[i] = Statement{
-				Type:   Directory,
-				Source: m[1] + strings.TrimSpace(comp) + m[3]}
-		}
-	} else if m := devRe.FindStringSubmatch(line); m != nil {
-		*r = Statement{Type: Device, Target: m[1]}
-		r.DeviceAttr.Type = int(m[2][0])
-		r.DeviceAttr.Major, _ = strconv.Atoi(m[3])
-		r.DeviceAttr.Minor, _ = strconv.Atoi(m[4])
-	} else if m := fileRe.FindStringSubmatch(line); m != nil {
-		// From here on we should only be left with regular files
-		*r = Statement{Type: RegularFile, Source: m[1]}
-		if len(m[2]) == 0 {
-			r.Target = m[1]
-		} else {
-			r.Target = m[2]
-		}
-	} else {
-		return nil, fmt.Errorf("%s:%d: invalid spec statement: %s", filename,
-			lineNo, line)
-	}
-	return
+type Link struct {
+	LinkSource string
+	HardLink   bool
+	Target     string // Target inside the chroot
+	*FileAttr
 }
 
-func (j *JailSpec) parseFromFile(filename string, includeDepth int) error {
-	if includeDepth > 8 {
-		return fmt.Errorf("nesting level too deep while including: %s",
-			filename)
-	}
-
-	f, err := os.Open(filename)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	r := bufio.NewReader(f)
-	var line string
-	lineNo := 0
-	for {
-		line, err = r.ReadString('\n')
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			return err
-		}
-		lineNo++
-		st, err := j.parseSpecLine(filename, lineNo, line, includeDepth)
-		if err != nil {
-			return err
-		}
-		if len(st) > 0 {
-			*j = append(*j, st...)
-		}
-	}
-	return nil
+type Run struct {
+	// Command to be run outside the chroot with the current working directory
+	// set to the chroot.
+	Command string
 }
 
-func Parse(filename string) (JailSpec, error) {
-	j := JailSpec{}
-	if err := j.parseFromFile(filename, 0 /* Depth */); err != nil {
-		return nil, err
+type Statements []Statement
+
+func statementToInt(s Statement) int {
+	switch s.(type) {
+	case Directory:
+		return 10
+	case RegularFile:
+		return 20
+	case Device:
+		return 30
+	case Link:
+		return 40
+	case Run:
+		return 50
+	default:
+		return 100
 	}
-	return j, nil
+}
+
+func ChrootTarget(s Statement) string {
+	switch stmt := s.(type) {
+	case Directory:
+		return stmt.Target
+	case RegularFile:
+		return stmt.Target
+	case Device:
+		return stmt.Target
+	case Link:
+		return stmt.Target
+	case Run:
+		return ""
+	default:
+		panic("unsupported Statement")
+	}
+}
+
+func (s Statements) Len() int {
+	return len(s)
+}
+
+func (s Statements) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s Statements) Less(i, j int) bool {
+	ii, ji := statementToInt(s[i]), statementToInt(s[j])
+	if ii < ji {
+		return true
+	} else if ii > ji {
+		return false
+	}
+	return ChrootTarget(s[i]) < ChrootTarget(s[j])
 }

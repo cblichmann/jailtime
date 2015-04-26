@@ -38,8 +38,8 @@ import (
 )
 
 var (
-	dsoRe = regexp.MustCompile("^.*(?:\\s+=>)?\\s+\\(0x[[:xdigit:]]+\\)\\s*$")
 	depRe = regexp.MustCompile("^.*\\s=>\\s+(.*)\\s+\\(0x[[:xdigit:]]+\\)\\s*$")
+	dsoRe = regexp.MustCompile("^.*(?:\\s+=>)?\\s+\\(0x[[:xdigit:]]+\\)\\s*$")
 )
 
 func ImportedLibraries(binary string) (deps []string, err error) {
@@ -80,7 +80,9 @@ func ImportedLibraries(binary string) (deps []string, err error) {
 			if len(m[1]) > 0 {
 				deps = append(deps, m[1])
 			}
-		} else if dsoRe.FindStringSubmatch(line) == nil {
+		} else if dsoRe.FindStringSubmatch(line) != nil {
+			deps = append(deps, LoaderExecutable)
+		} else {
 			err = fmt.Errorf("bug: OS loader returned unexpected format: ",
 				strings.TrimSpace(line))
 		}
