@@ -1,0 +1,81 @@
+# jailtime version 0.1
+# Copyright (c)2015 Christian Blichmann
+#
+# Midnight Commander Jail Specification
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL CHRISTIAN BLICHMANN BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+#
+/usr/bin/mc
+/usr/bin/mcview
+/usr/bin/mcdiff
+/usr/bin/mcedit
+
+/tmp/
+run chmod 1777 tmp
+
+/etc/mc/edit.indent.rc
+/etc/mc/filehighlight.ini
+/etc/mc/mc.default.keymap
+/etc/mc/mc.emacs.keymap
+/etc/mc/mc.ext
+/etc/mc/mc.keymap
+/etc/mc/mc.menu
+/etc/mc/mc.menu.sr
+/etc/mc/mcedit.menu
+/etc/mc/sfs.ini
+/usr/lib/mc/extfs.d/uzoo
+/usr/lib/mc/extfs.d/rpms+
+/usr/lib/mc/extfs.d/ulha
+/usr/lib/mc/extfs.d/audio
+/usr/lib/mc/extfs.d/a+
+/usr/lib/mc/extfs.d/trpm
+/usr/lib/mc/extfs.d/iso9660
+/usr/lib/mc/extfs.d/rpm
+/usr/lib/mc/extfs.d/deb
+/usr/lib/mc/extfs.d/gitfs+
+/usr/lib/mc/extfs.d/apt+
+/usr/lib/mc/extfs.d/uha
+/usr/lib/mc/extfs.d/uzip
+/usr/lib/mc/extfs.d/uar
+/usr/lib/mc/extfs.d/s3+
+/usr/lib/mc/extfs.d/lslR
+/usr/lib/mc/extfs.d/ualz
+/usr/lib/mc/extfs.d/patchsetfs
+/usr/lib/mc/extfs.d/bpp
+/usr/lib/mc/extfs.d/changesetfs
+/usr/lib/mc/extfs.d/deba
+/usr/lib/mc/extfs.d/hp48+
+/usr/lib/mc/extfs.d/patchfs
+/usr/lib/mc/extfs.d/dpkg+
+/usr/lib/mc/extfs.d/ucab
+/usr/lib/mc/extfs.d/u7z
+/usr/lib/mc/extfs.d/ulib
+/usr/lib/mc/extfs.d/debd
+/usr/lib/mc/extfs.d/uarj
+/usr/lib/mc/extfs.d/mailfs
+/usr/lib/mc/extfs.d/urar
+/usr/lib/mc/extfs.d/uarc
+/usr/lib/mc/extfs.d/uc1541
+/usr/lib/mc/extfs.d/uace
+
+/usr/share/mc/skins/mc46.ini
+
+/usr/share/mc/mc.charsets

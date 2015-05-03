@@ -1,0 +1,120 @@
+# jailtime version 0.1
+# Copyright (c)2015 Christian Blichmann
+#
+# Basic shell profile
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL CHRISTIAN BLICHMANN BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+# THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# Files/symlinks, this list is mostly based on GNU coreutils (as packaged in
+# Debian coreutils), omitting a few seldom used/obscure utilities.
+/bin/bash
+/bin/cat
+/bin/chgrp
+/bin/chmod
+/bin/chown
+/bin/cp
+/bin/cpio
+/bin/date
+/bin/dd
+/bin/df
+/bin/dir
+/bin/egrep
+/bin/grep
+/bin/hostname
+/bin/less
+/bin/ln
+/bin/ls
+/bin/mkdir
+/bin/mknod
+/bin/mktemp
+/bin/more
+/bin/ps
+/bin/readlink
+/bin/rm
+/bin/rmdir
+/bin/sed
+/bin/sh -> /bin/bash
+/bin/sleep
+/bin/tar
+/bin/touch
+/bin/uname
+/bin/vdir
+/bin/which
+/usr/bin/arch
+/usr/bin/awk
+/usr/bin/base64
+/usr/bin/basename
+/usr/bin/cksum
+/usr/bin/csplit
+/usr/bin/cut
+/usr/bin/dircolors
+/usr/bin/dirname
+/usr/bin/du
+/usr/bin/env
+/usr/bin/expand
+/usr/bin/expr
+/usr/bin/fmt
+/usr/bin/fold
+/usr/bin/groups
+/usr/bin/head
+/usr/bin/id
+/usr/bin/install
+/usr/bin/link
+/usr/bin/logname
+/usr/bin/md5sum
+/usr/bin/mkfifo
+/usr/bin/nice
+/usr/bin/nl
+/usr/bin/nohup
+/usr/bin/nproc
+/usr/bin/numfmt
+/usr/bin/od
+/usr/bin/paste
+/usr/bin/pathchk
+/usr/bin/realpath
+/usr/bin/seq
+/usr/bin/sha1sum
+/usr/bin/sha224sum
+/usr/bin/sha256sum
+/usr/bin/sha384sum
+/usr/bin/sha512sum
+/usr/bin/shred
+/usr/bin/shuf
+/usr/bin/sort
+/usr/bin/split
+/usr/bin/stat
+/usr/bin/stdbuf
+/usr/bin/tac
+/usr/bin/tail
+/usr/bin/tee
+/usr/bin/timeout
+/usr/bin/touch
+/usr/bin/tr
+/usr/bin/truncate
+/usr/bin/tsort
+/usr/bin/tty
+/usr/bin/unexpand
+/usr/bin/uniq
+/usr/bin/unlink
+/usr/bin/wc
+/usr/bin/who
+/usr/bin/whoami
+/usr/bin/yes
+

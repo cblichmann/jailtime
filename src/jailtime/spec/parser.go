@@ -34,6 +34,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"syscall"
 )
 
 var (
@@ -56,7 +57,7 @@ var (
 
 	// Device files:
 	//  /dev/console c 5 1
-	devRe = regexp.MustCompile("^(.*)\\s+([cbup])\\s+(\\d+)\\s+(\\d+)$")
+	devRe = regexp.MustCompile("^(.*)\\s+([cbups])\\s+(\\d+)\\s+(\\d+)$")
 
 	// Regular files:
 	//  /usr/bin/python
@@ -82,28 +83,40 @@ func parseSpecLine(filename string, lineNo int, line string,
 		}
 	} else if m := linkRe.FindStringSubmatch(line); m != nil {
 		lineStmts = Statements{Link{
-			LinkSource: m[3],
-			Target:     strings.TrimSpace(m[1]),
-			HardLink:   m[2] == "=>"}}
+			source:   m[3],
+			target:   strings.TrimSpace(m[1]),
+			HardLink: m[2] == "=>"}}
 	} else if m := dirRe.FindStringSubmatch(line); m != nil {
 		comps := strings.Split(m[2], ",")
 		lineStmts = make(Statements, len(comps))
 		for i, comp := range comps {
 			lineStmts[i] = Directory{
-				Target: m[1] + strings.TrimSpace(comp) + m[3]}
+				target: m[1] + strings.TrimSpace(comp) + m[3]}
 		}
 	} else if m := devRe.FindStringSubmatch(line); m != nil {
-		d := Device{Target: m[1], Type: int(m[2][0])}
+		d := Device{target: m[1]}
+		switch m[2][0] {
+		case 'c':
+			fallthrough
+		case 'u':
+			d.Type = syscall.S_IFCHR
+		case 'b':
+			d.Type = syscall.S_IFBLK
+		case 'p':
+			d.Type = syscall.S_IFIFO
+		case 's':
+			d.Type = syscall.S_IFSOCK
+		}
 		d.Major, _ = strconv.Atoi(m[3])
 		d.Minor, _ = strconv.Atoi(m[4])
 		lineStmts = Statements{d}
 	} else if m := fileRe.FindStringSubmatch(line); m != nil {
 		// From here on we should only be left with regular files
-		f := RegularFile{Source: m[1]}
+		f := RegularFile{source: m[1]}
 		if len(m[2]) == 0 {
-			f.Target = m[1]
+			f.target = m[1]
 		} else {
-			f.Target = m[2]
+			f.target = m[2]
 		}
 		lineStmts = Statements{f}
 	} else {

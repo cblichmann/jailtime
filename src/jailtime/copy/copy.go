@@ -33,7 +33,8 @@ import (
 )
 
 const (
-	ReflinkAlways = iota
+	ReflinkNo = iota
+	ReflinkAlways
 	ReflinkAuto
 )
 
