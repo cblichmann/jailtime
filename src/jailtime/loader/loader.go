@@ -42,6 +42,8 @@ var (
 	dsoRe = regexp.MustCompile("^.*(?:\\s+=>)?\\s+\\(0x[[:xdigit:]]+\\)\\s*$")
 )
 
+// TODO(cblichmann): Implement OS X support, the equivalent of "ldd" is
+//                   "/usr/bin/otool -L"
 func ImportedLibraries(binary string) (deps []string, err error) {
 	// Do not wait for the loader to return an error on non-existing files. We
 	// need to be able to read the file.
@@ -54,7 +56,6 @@ func ImportedLibraries(binary string) (deps []string, err error) {
 	b := make([]byte, len(elf.ELFMAG))
 	if _, err2 := f.Read(b); err2 != nil || string(b) != elf.ELFMAG {
 		// File is either too small or not an ELF
-		// TODO(cblichmann): Implement OS X support
 		return
 	}
 

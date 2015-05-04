@@ -79,36 +79,34 @@ func parseSpecLine(filename string, lineNo int, line string,
 		case "include":
 			lineStmts, err = parseFromFile(m[2], includeDepth+1)
 		case "run":
-			lineStmts = Statements{Run{Command: m[2]}}
+			lineStmts = Statements{NewRun(m[2])}
 		}
 	} else if m := linkRe.FindStringSubmatch(line); m != nil {
-		lineStmts = Statements{Link{
-			source:   m[3],
-			target:   strings.TrimSpace(m[1]),
-			HardLink: m[2] == "=>"}}
+		lineStmts = Statements{NewLink(m[3], strings.TrimSpace(m[1]),
+			m[2] == "=>")}
 	} else if m := dirRe.FindStringSubmatch(line); m != nil {
 		comps := strings.Split(m[2], ",")
 		lineStmts = make(Statements, len(comps))
 		for i, comp := range comps {
-			lineStmts[i] = Directory{
-				target: m[1] + strings.TrimSpace(comp) + m[3]}
+			lineStmts[i] = NewDirectory(m[1] + strings.TrimSpace(comp) + m[3])
 		}
 	} else if m := devRe.FindStringSubmatch(line); m != nil {
-		d := Device{target: m[1]}
+		type_ := 0
 		switch m[2][0] {
 		case 'c':
 			fallthrough
 		case 'u':
-			d.Type = syscall.S_IFCHR
+			type_ = syscall.S_IFCHR
 		case 'b':
-			d.Type = syscall.S_IFBLK
+			type_ = syscall.S_IFBLK
 		case 'p':
-			d.Type = syscall.S_IFIFO
+			type_ = syscall.S_IFIFO
 		case 's':
-			d.Type = syscall.S_IFSOCK
+			type_ = syscall.S_IFSOCK
 		}
-		d.Major, _ = strconv.Atoi(m[3])
-		d.Minor, _ = strconv.Atoi(m[4])
+		major, _ := strconv.Atoi(m[3])
+		minor, _ := strconv.Atoi(m[3])
+		d := NewDevice(m[1], type_, major, minor)
 		lineStmts = Statements{d}
 	} else if m := fileRe.FindStringSubmatch(line); m != nil {
 		// From here on we should only be left with regular files

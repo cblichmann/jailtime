@@ -36,101 +36,107 @@ type FileAttr struct {
 }
 
 type Statement interface {
-	// Source outside the chroot
+	// Source outside the chroot, may be empty
 	Source() string
 
-	// Target inside the chroot
+	// Target inside the chroot, may be empty
 	Target() string
 
+	// Filesystem attributes, may return nil
 	FileAttr() *FileAttr
 }
 
-type RegularFile struct {
-	source   string
+type targetChrootObj struct {
 	target   string
 	fileAttr FileAttr
 }
 
+func (t targetChrootObj) Target() string {
+	return t.target
+}
+
+func (t targetChrootObj) FileAttr() *FileAttr {
+	return &t.fileAttr
+}
+
+type RegularFile struct {
+	source string
+	targetChrootObj
+}
+
 func NewRegularFile(source, target string) RegularFile {
-	return RegularFile{source: source, target: target}
+	return RegularFile{source, targetChrootObj{target: target}}
 }
 
 func (r RegularFile) Source() string {
 	return r.source
 }
 
-func (r RegularFile) Target() string {
-	return r.target
-}
-
-func (r RegularFile) FileAttr() *FileAttr {
-	return &r.fileAttr
-}
-
 type Device struct {
-	target   string
-	fileAttr FileAttr
-	Type     int
-	Major    int
-	Minor    int
+	targetChrootObj
+	type_ int
+	major int
+	minor int
+}
+
+func NewDevice(target string, type_, major, minor int) Device {
+	return Device{targetChrootObj{target: target}, type_, major, minor}
 }
 
 func (d Device) Source() string {
 	return ""
 }
 
-func (d Device) Target() string {
-	return d.target
+func (d Device) Type() int {
+	return d.type_
 }
 
-func (d Device) FileAttr() *FileAttr {
-	return &d.fileAttr
+func (d Device) Major() int {
+	return d.major
+}
+
+func (d Device) Minor() int {
+	return d.minor
 }
 
 type Directory struct {
-	target   string
-	fileAttr FileAttr
+	targetChrootObj
 }
 
 func NewDirectory(target string) Directory {
-	return Directory{target: target}
+	return Directory{targetChrootObj{target: target}}
 }
 
 func (d Directory) Source() string {
 	return ""
 }
 
-func (d Directory) Target() string {
-	return d.target
-}
-
-func (d Directory) FileAttr() *FileAttr {
-	return &d.fileAttr
-}
-
 type Link struct {
-	source   string
-	target   string
-	fileAttr FileAttr
-	HardLink bool
+	source string
+	targetChrootObj
+	hardLink bool
+}
+
+func NewLink(source, target string, hardLink bool) Link {
+	return Link{source, targetChrootObj{target: target}, hardLink}
 }
 
 func (l Link) Source() string {
 	return l.source
 }
 
-func (l Link) Target() string {
-	return l.target
-}
-
-func (l Link) FileAttr() *FileAttr {
-	return &l.fileAttr
+func (l Link) HardLink() bool {
+	return l.hardLink
 }
 
 type Run struct {
 	// Command to be run outside the chroot with the current working directory
 	// set to the chroot.
-	Command string
+	command string
+}
+
+func NewRun(command string) Run {
+	return Run{command}
 }
 
 func (r Run) Source() string {
@@ -143,6 +149,10 @@ func (r Run) Target() string {
 
 func (r Run) FileAttr() *FileAttr {
 	return nil
+}
+
+func (r Run) Command() string {
+	return r.command
 }
 
 type Statements []Statement

@@ -206,7 +206,7 @@ func UpdateChroot(chrootDir string, stmts spec.Statements) (err error) {
 			linkName := stmt.Source()
 			var action string
 			var arrow string
-			if stmt.HardLink {
+			if stmt.HardLink() {
 				action = "create hardlink"
 				arrow = "=>"
 			} else {
@@ -221,7 +221,7 @@ func UpdateChroot(chrootDir string, stmts spec.Statements) (err error) {
 					return
 				}
 			}
-			if stmt.HardLink {
+			if stmt.HardLink() {
 				err = os.Link(linkName, target)
 			} else {
 				err = os.Symlink(linkName, target)
@@ -238,15 +238,15 @@ func UpdateChroot(chrootDir string, stmts spec.Statements) (err error) {
 					return
 				}
 			}
-			if err = syscall.Mknod(target, uint32(stmt.Type|0644), MakeDev(
-				stmt.Major, stmt.Minor)); err != nil {
+			if err = syscall.Mknod(target, uint32(stmt.Type()|0644), MakeDev(
+				stmt.Major(), stmt.Minor())); err != nil {
 				return
 			}
 		case spec.Run:
 			if *verbose {
-				fmt.Printf("run in %s: %s\n", chrootDir, stmt.Command)
+				fmt.Printf("run in %s: %s\n", chrootDir, stmt.Command())
 			}
-			cmd := exec.Command("/bin/sh", "-c", stmt.Command)
+			cmd := exec.Command("/bin/sh", "-c", stmt.Command())
 			cmd.Dir = chrootDir
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
