@@ -2,7 +2,7 @@
  * jailtime version 0.1
  * Copyright (c)2015 Christian Blichmann
  *
- * Create and maintain chroot jails
+ * Create and manage chroot/jail environments
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:

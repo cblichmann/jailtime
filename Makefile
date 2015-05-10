@@ -35,4 +35,3 @@ clean:
 $(go_binaries): %:
 	@echo "  [Install]   $@"
 	@go install $(@:$(bin_dir)/%=%)
-
