@@ -1,2 +1,9 @@
+language: go
+
+go:
+    - 1.5
+    - 1.4
+    - tip
+
 script:
     - eval $(make env) && make
