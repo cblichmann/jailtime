@@ -34,18 +34,17 @@ go_packages = \
 
 # Directories
 bin_dir = $(this_dir)bin
-go_binaries = $(addprefix $(bin_dir)/,$(go_packages))
-
 third_party_dir := $(abspath $(this_dir)../third_party)
+project_go_path := $(third_party_dir)/go:$(this_dir)
 
-export GOPATH ?= $(third_party_dir)/go:$(this_dir)
+go_binaries = $(addprefix $(bin_dir)/,$(go_packages))
 
 .PHONY: all
 all: $(go_binaries)
 
 env:
 #	# Use like this: $ eval $(make env)
-	@echo export GOPATH=$(GOPATH)
+	@echo export GOPATH=$(project_go_path)
 
 .PHONY: clean
 clean:
