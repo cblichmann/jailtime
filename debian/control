@@ -1,0 +1,17 @@
+Source: jailtime
+Maintainer: Christian Blichmann <jailtime@blichmann.eu>
+Section: admin
+Priority: optional
+Build-Depends: cdbs,golang
+Standards-Version: 3.9.6
+Homepage: https://github.com/cblichmann/jailtime
+
+Package: jailtime
+Architecture: any
+Depends: ${shlibs:Depends},${misc:Depends}
+Description: Create and manage chroot/jail environments
+ jailtime helps to
+ - create restricted SSH logins that only allow scp or git, etc.
+ - build a Docker image without all the clutter of a fat base image
+   based on a full Linux distribution.
+ - restrict daemons into a filesystem sub-tree to enhance security.

@@ -1,0 +1,3 @@
+bin/jailtime /usr/bin/
+examples/ /usr/share/doc/jailtime/
+README.md /usr/share/doc/jailtime/
