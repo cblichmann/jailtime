@@ -1,5 +1,5 @@
 /*
- * jailtime version 0.1
+ * jailtime version 0.2
  * Copyright (c)2015-2016 Christian Blichmann
  *
  * Chroot specification file parser

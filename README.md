@@ -1,5 +1,5 @@
-jailtime 0.1 [![Build Status](https://api.travis-ci.org/cblichmann/jailtime.svg?branch=master)](https://travis-ci.org/cblichmann/jailtime)
-============
+jailtime [![Build Status](https://api.travis-ci.org/cblichmann/jailtime.svg?branch=master)](https://travis-ci.org/cblichmann/jailtime)
+========
 
 jailtime is a command-line utility to create and manage chroot/jail
 environments.
@@ -197,7 +197,7 @@ These tools serve a similar purpose or are somewhat related:
 Copyright/License
 -----------------
 
-jailtime version 0.1
+jailtime version 0.2
 Copyright (c)2015-2016 Christian Blichmann <jailtime@blichmann.eu>
 
 jailtime is licensed under a two-clause BSD license, see the LICENSE file
