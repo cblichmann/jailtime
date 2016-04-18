@@ -171,7 +171,6 @@ Bugs
   - Cannot specify the file permissions in jail specifications
   - Error messages could be more specific
   - Does not run on OS X or any of the BSDs
-  - No distribution packages
 
 
 Similar Tools
