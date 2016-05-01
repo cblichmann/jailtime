@@ -1,4 +1,5 @@
-/bin
-/pkg
+bin/
+pkg/
+src/
 .*.sw[op]
 

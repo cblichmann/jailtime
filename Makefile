@@ -1,6 +1,6 @@
 #!/usr/bin/env make
 #
-# jailtime version 0.2
+# jailtime version 0.3
 # Copyright (c)2015,2016 Christian Blichmann
 #
 # Makefile for POSIX compatible systems
@@ -24,33 +24,34 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 # THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Find location of this Makefile
-this_dir := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-
-# Source Configuration {
-go_packages = \
-	jailtime/jailtime
-# } Source Configuration
+# Source Configuration
+go_package = blichmann.eu/code/jailtime
+go_programs = jailtime
 
 # Directories
-bin_dir = $(this_dir)bin
-third_party_dir := $(abspath $(this_dir)../third_party)
+this_dir := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
+bin_dir := $(this_dir)/bin
+pkg_src := $(this_dir)/src/$(go_package)
+third_party_dir := $(abspath $(this_dir)/../third_party)
+
+binaries := $(addprefix $(bin_dir)/,$(go_programs))
 project_go_path := $(third_party_dir)/go:$(this_dir)
 
-go_binaries = $(addprefix $(bin_dir)/,$(go_packages))
-
 .PHONY: all
-all: $(go_binaries)
+all: $(binaries)
 
 env:
-#	# Use like this: $ eval $(make env)
-	@echo export GOPATH=$(project_go_path)
+#	# Use like this: eval $(make env)
+	@echo "export GOPATH=$(project_go_path)"
 
 .PHONY: clean
 clean:
 	@echo "  [Clean]     Removing build artifacts"
-	@for i in bin pkg; do rm -rf $(this_dir)$$i; done
+	@for i in bin pkg src; do rm -rf "$(this_dir)/$$i"; done
 
-$(go_binaries): %:
-	@echo "  [Install]   $@"
-	@go install $(@:$(bin_dir)/%=%)
+$(binaries): export GOPATH = $(project_go_path)
+$(binaries):
+	@echo "  [Build]     $@"
+	@mkdir -p "$(dir $(pkg_src))"
+	@ln -sf "$(this_dir)" "$(pkg_src)"
+	@go install $(go_package)

@@ -1,5 +1,5 @@
 /*
- * jailtime version 0.2
+ * jailtime version 0.3
  * Copyright (c)2015-2016 Christian Blichmann
  *
  * File copy utility
@@ -24,7 +24,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package copy
+package copy // import "blichmann.eu/code/jailtime/copy"
 
 import (
 	"bufio"

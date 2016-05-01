@@ -24,7 +24,7 @@ How to Build
 
 General way to build from source via `go get`:
 ```
-go get github.com/cblichmann/jailtime/src/jailtime
+go get blichmann.eu/code/jailtime
 ```
 
 ### Build the old-fashioned Way
@@ -196,7 +196,7 @@ These tools serve a similar purpose or are somewhat related:
 Copyright/License
 -----------------
 
-jailtime version 0.2
+jailtime version 0.3
 Copyright (c)2015-2016 Christian Blichmann <jailtime@blichmann.eu>
 
 jailtime is licensed under a two-clause BSD license, see the LICENSE file

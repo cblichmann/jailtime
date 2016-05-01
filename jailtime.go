@@ -1,5 +1,5 @@
 /*
- * jailtime version 0.2
+ * jailtime version 0.3
  * Copyright (c)2015-2016 Christian Blichmann
  *
  * Create and manage chroot/jail environments
@@ -27,11 +27,11 @@
 package main
 
 import (
+	"blichmann.eu/code/jailtime/copy"
+	"blichmann.eu/code/jailtime/loader"
+	"blichmann.eu/code/jailtime/spec"
 	"flag"
 	"fmt"
-	"jailtime/copy"
-	"jailtime/loader"
-	"jailtime/spec"
 	"os"
 	"os/exec"
 	"path"

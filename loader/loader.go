@@ -1,8 +1,8 @@
 /*
- * jailtime version 0.2
+ * jailtime version 0.3
  * Copyright (c)2015-2016 Christian Blichmann
  *
- * Chroot specification file parser
+ * Import library utility
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -24,7 +24,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package loader
+package loader // import "blichmann.eu/code/jailtime/loader"
 
 import (
 	"bufio"

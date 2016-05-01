@@ -1,5 +1,5 @@
 /*
- * jailtime version 0.2
+ * jailtime version 0.3
  * Copyright (c)2015-2016 Christian Blichmann
  *
  * Chroot specification
@@ -24,7 +24,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package spec
+package spec // import "blichmann.eu/code/jailtime/spec"
 
 // General file attributes: if these are not specified in the spec, these will
 // default to root:root with mode 0755 for type Directory and root:root with

@@ -6,4 +6,4 @@ go:
     - tip
 
 script:
-    - eval $(make env) && make
+    - make
