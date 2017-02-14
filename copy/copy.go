@@ -1,6 +1,6 @@
 /*
  * jailtime version 0.3
- * Copyright (c)2015-2016 Christian Blichmann
+ * Copyright (c)2015-2017 Christian Blichmann
  *
  * File copy utility
  *
@@ -47,7 +47,7 @@ type Options struct {
 	BufSize           int64
 }
 
-const defaultBufSize = 32 * 1024
+const defaultBufSize = 32 << 10 // 32 KiB
 
 // File copies the file named in source to a file named in target. It returns
 // the number of bytes written and an error, if any. File uses buffered I/O and

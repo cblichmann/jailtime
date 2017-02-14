@@ -1,6 +1,6 @@
 /*
  * jailtime version 0.3
- * Copyright (c)2015-2016 Christian Blichmann
+ * Copyright (c)2015-2017 Christian Blichmann
  *
  * Import library utility for AMD64
  *
