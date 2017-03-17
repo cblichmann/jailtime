@@ -85,7 +85,7 @@ func ImportedLibraries(binary string) (deps []string, err error) {
 		} else if dsoRe.FindStringSubmatch(line) != nil {
 			deps = append(deps, LoaderExecutable)
 		} else {
-			err = fmt.Errorf("bug: OS loader returned unexpected format: ",
+			err = fmt.Errorf("bug: OS loader returned unexpected format: %s",
 				strings.TrimSpace(line))
 		}
 	}

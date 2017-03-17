@@ -10,6 +10,21 @@ Why is this useful? jailtime helps to
   - restrict daemons into a filesystem sub-tree to enhance security.
 
 
+Table of Contents
+-----------------
+
+  * [jailtime](README.md#jailtime-)
+     * [Requirements](README.md#requirements)
+     * [How to Build](README.md#how-to-build)
+        * [Build the old-fashioned Way](README.md#build-the-old-fashioned-way)
+     * [How to Use](README.md#how-to-use)
+        * [Writing Jail Specifications](README.md#writing-jail-specifications)
+        * [Entering a chroot](README.md#entering-a-chroot)
+     * [Bugs](README.md#bugs)
+     * [Similar Tools](README.md#similar-tools)
+     * [Copyright/License](README.md#copyrightlicense)
+
+
 Requirements
 ------------
 

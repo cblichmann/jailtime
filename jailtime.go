@@ -103,7 +103,7 @@ func processCommandLine() {
 	}
 	if *version {
 		fmt.Printf("jailtime %d.%d\n"+
-			"Copyright (c)2015 Christian Blichmann\n"+
+			"Copyright (c)2015-2017 Christian Blichmann\n"+
 			"This software is BSD licensed, see the source for copying "+
 			"conditions.\n\n", VersionMajor, VersionMinor)
 		os.Exit(0)
@@ -121,7 +121,7 @@ func processCommandLine() {
 
 func ExpandLexical(stmts spec.Statements) spec.Statements {
 	todo := make(map[string]bool)
-	// Expect at least half or the files to expand at least to its dir
+	// Expect at least half of the files to expand at least to its dir
 	expanded := make(spec.Statements, 0, 3*len(stmts)/2)
 	for _, s := range stmts {
 		var dir string
@@ -174,8 +174,11 @@ func ExpandWithDependencies(stmts spec.Statements) spec.Statements {
 }
 
 func MakeDev(major, minor int) int {
-	return int(uint(minor)&0xFF | (uint(major)&0xFFF)<<8 |
-		(uint(minor) & ^uint(0xFF))<<12 | (uint(major) & ^uint(0xFFF))<<32)
+	// Taken from glibc's sys/sysmacros.h
+	return int(uint64(minor)&0xFF |
+		(uint64(major)&0xFFF)<<8 |
+		(uint64(minor) & ^uint64(0xFF))<<12 |
+		(uint64(major) & ^uint64(0xFFF))<<32)
 }
 
 func UpdateChroot(chrootDir string, stmts spec.Statements) (err error) {

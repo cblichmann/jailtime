@@ -47,13 +47,13 @@ type Options struct {
 	BufSize           int64
 }
 
-const defaultBufSize = 32 << 10 // 32 KiB
+const defaultBufSize = 1 << 20 // 1 MiB
 
-// File copies the file named in source to a file named in target. It returns
-// the number of bytes written and an error, if any. File uses buffered I/O and
+// File copies the file named in src to a file named in dest. It returns the
+// number of bytes written and an error, if any. File uses buffered I/O and
 // delegates to io.Copy to do the actual work. The copy behavior can be
 // influenced by setting options in opt.
-func File(source, target string, opt *Options) (written int64, err error) {
+func File(src, dest string, opt *Options) (written int64, err error) {
 	if opt == nil {
 		opt = &Options{}
 	}
@@ -64,7 +64,7 @@ func File(source, target string, opt *Options) (written int64, err error) {
 		opt.BufSize = defaultBufSize
 	}
 
-	s, err := os.Open(source)
+	s, err := os.Open(src)
 	if err != nil {
 		return
 	}
@@ -77,19 +77,31 @@ func File(source, target string, opt *Options) (written int64, err error) {
 	total := fi.Size()
 
 	if opt.RemoveDestination {
-		if err = os.Remove(target); err != nil {
+		if err = os.Remove(dest); err != nil {
 			return
 		}
 	}
 
 	hardFail := false
+	reflink := HaveCoW() && opt.Reflink != ReflinkNo
+	var t *os.File
 Retry:
-	t, err := os.Create(target)
-	t.Chmod(fi.Mode())
+	if reflink {
+		err = cloneFile(src, dest)
+		if err != nil && opt.Reflink == ReflinkAuto {
+			reflink = false
+			goto Retry
+		}
+		opt.Progress(total, total)
+		return
+	} else {
+		t, err = os.Create(dest)
+		t.Chmod(fi.Mode())
+	}
 	if err != nil {
 		if opt.Force && !hardFail {
 			hardFail = true
-			if err = os.Remove(target); err == nil {
+			if err = os.Remove(dest); err == nil {
 				goto Retry
 			}
 		}
