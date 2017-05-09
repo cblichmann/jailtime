@@ -28,6 +28,7 @@
 # Source Configuration
 go_package = blichmann.eu/code/jailtime
 go_programs = jailtime
+source_only_tgz = ../jailtime_0.3.orig.tar.xz
 
 # Directories
 this_dir := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
@@ -58,3 +59,29 @@ $(binaries): $(sources)
 	@mkdir -p "$(dir $(pkg_src))"
 	@ln -sf "$(this_dir)" "$(pkg_src)"
 	@go install $(go_package)
+
+$(source_only_tgz): clean
+	@echo "  [Archive]   $@"
+	@tar -C "$(this_dir)" -caf "$@" \
+		--transform=s,^,jailtime-0.3/, \
+		--exclude=.git/* --exclude=.git \
+		--exclude=debian/* --exclude=debian \
+		"--exclude=$@" \
+		--exclude-vcs-ignores \
+		.??* *
+
+# Create a source tarball without the debian/ subdirectory
+.PHONY: debsource
+debsource: $(source_only_tgz)
+
+# debuild signs the package iff DEBFULLNAME, DEBEMAIL and DEB_SIGN_KEYID are
+# set. Note that if the GPG key includes an alias, it must match the latest
+# entry in debian/changelog.
+deb: debsource $(binaries)
+	@echo "  [Debuild]   Building package"
+	@debuild
+
+.PHONY: debclean
+debclean: clean
+	@echo "  [Deb-Clean] Removing artifacts"
+	@debuild -- clean
