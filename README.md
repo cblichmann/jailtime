@@ -175,6 +175,10 @@ sudo systemd-nspawn -D chroot_dir/ /bin/bash
 This uses the same underlying technique as [Docker](https://www.docker.com/),
 Linux Containers (LXC), and allows for greater isolation.
 
+Another good option it to use [nsjail](https://google.github.io/nsjail/),
+which uses a similar technique but also allows to restrict the chroot even
+further by using a seccomp-bpf based sandbox.
+
 FreeBSD derived systems also have the [jail](
 https://www.freebsd.org/cgi/man.cgi?query=jail&format=html) utility, which
 serves a similar purpose.
