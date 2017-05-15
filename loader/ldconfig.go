@@ -2,7 +2,7 @@
  * jailtime version 0.3
  * Copyright (c)2015-2017 Christian Blichmann
  *
- * Import library utility for x32
+ * Dynamic loader configuration parsing
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -27,4 +27,66 @@
 
 package loader // import "blichmann.eu/code/jailtime/loader"
 
-const LoaderExecutable = "/libx32/ld-linux-x32.so.2"
+import (
+	"bufio"
+	"io"
+	"os"
+	"path/filepath"
+	"strings"
+)
+
+// Default loader config path
+const loaderConfig = "/etc/ld.so.conf"
+
+var LdSearchPaths []string = ParseLdConfig(loaderConfig)
+
+func ParseLdConfig(conf string) (paths []string) {
+	paths = []string{}
+	f, err := os.Open(conf)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	r := bufio.NewReader(f)
+	var line string
+	for {
+		line, err = r.ReadString('\n')
+		if err == io.EOF {
+			err = nil
+			break
+		} else if err != nil {
+			return
+		}
+
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		comp := strings.SplitN(line, " ", 2)
+		if len(comp) == 2 && comp[0] == "include" {
+			m, err := filepath.Glob(strings.TrimSpace(comp[1]))
+			if err != nil {
+				continue
+			}
+			for _, p := range m {
+				if newPaths := ParseLdConfig(p); len(newPaths) > 0 {
+					paths = append(paths, newPaths...)
+				}
+			}
+		} else {
+			paths = append(paths, comp[0])
+		}
+	}
+	return
+}
+
+func FindLibraryFunc(basename string, paths []string,
+	usable func(path string) bool) string {
+	for _, p := range paths {
+		full := filepath.Join(p, basename)
+		if _, err := os.Stat(full); err == nil && usable(full) {
+			return full
+		}
+	}
+	return ""
+}

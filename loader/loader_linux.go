@@ -28,67 +28,77 @@
 package loader // import "blichmann.eu/code/jailtime/loader"
 
 import (
-	"bufio"
 	"debug/elf"
-	"fmt"
-	"io"
-	"os"
-	"os/exec"
-	"regexp"
+	"path/filepath"
 	"strings"
 )
 
-var (
-	depRe = regexp.MustCompile("^.*\\s=>\\s+(.*)\\s+\\(0x[[:xdigit:]]+\\)\\s*$")
-	dsoRe = regexp.MustCompile("^.*(?:\\s+=>)?\\s+\\(0x[[:xdigit:]]+\\)\\s*$")
-)
+// readELFInterpreter returns the value of the interpreter (dynamic loader)
+// listed in the ELF program header of f. If there is no interpreter set,
+// returns the empty string.
+func readELFInterpreter(f *elf.File) string {
+	const pathMax = 4096
+	for _, p := range f.Progs {
+		if p.Type == elf.PT_INTERP {
+			r := p.Open()
+			m := p.Filesz
+			if m > pathMax {
+				m = pathMax
+			}
+			b := make([]byte, m)
+			r.Read(b)
+			return strings.TrimRight(string(b), "\x00")
+		}
+	}
+	return ""
+}
 
-// TODO(cblichmann): Implement OS X support, the equivalent of "ldd" is
-//                   "/usr/bin/otool -L"
 func ImportedLibraries(binary string) (deps []string, err error) {
-	// Do not wait for the loader to return an error on non-existing files. We
-	// need to be able to read the file.
-	f, err := os.Open(binary)
+	f, err := elf.Open(binary)
 	if err != nil {
 		return
 	}
 	defer f.Close()
 
-	b := make([]byte, len(elf.ELFMAG))
-	if _, err2 := f.Read(b); err2 != nil || string(b) != elf.ELFMAG {
-		// File is either too small or not an ELF
-		return
-	}
-
-	cmd := exec.Command(LoaderExecutable, "--list", binary)
-	stdout, err := cmd.StdoutPipe()
+	libs, err := f.ImportedLibraries()
 	if err != nil {
 		return
 	}
-	if err = cmd.Start(); err != nil {
-		return
-	}
-	r := bufio.NewReader(stdout)
-	deps = make([]string, 0, 10)
-	var line string
+
+	interp := readELFInterpreter(f)
+	interpBase := filepath.Base(interp)
+	resolved := map[string]string{interpBase: interp}
+	paths := append([]string{filepath.Dir(interp)}, LdSearchPaths...)
 	for {
-		line, err = r.ReadString('\n')
-		if err == io.EOF {
-			break
-		} else if err != nil {
-			return
-		}
-		if m := depRe.FindStringSubmatch(line); m != nil {
-			if len(m[1]) > 0 {
-				deps = append(deps, m[1])
+		numResolved := len(resolved)
+		for _, l := range libs {
+			if _, ok := resolved[l]; ok {
+				continue
 			}
-		} else if dsoRe.FindStringSubmatch(line) != nil {
-			deps = append(deps, LoaderExecutable)
-		} else {
-			err = fmt.Errorf("bug: OS loader returned unexpected format: %s",
-				strings.TrimSpace(line))
+			r := FindLibraryFunc(l, paths, func(path string) bool {
+				g, err := elf.Open(path)
+				if err != nil {
+					return false
+				}
+				defer g.Close()
+				if g.Class == f.Class && g.Machine == g.Machine {
+					newLibs, err := g.ImportedLibraries()
+					libs = append(libs, newLibs...)
+					return err == nil
+				}
+				return false
+			})
+			if r != "" {
+				resolved[l] = r
+			}
 		}
+		if numResolved == len(resolved) {
+			break
+		}
+
 	}
-	err = cmd.Wait()
+	for _, v := range resolved {
+		deps = append(deps, v)
+	}
 	return
 }
