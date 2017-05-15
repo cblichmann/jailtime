@@ -49,7 +49,6 @@ To build from a specific revision/branch/tag, not using `go get`:
 mkdir -p jailtime && cd jailtime
 git clone https://github.com/cblichmann/jailtime.git .
 # Optional: checkout a specific rev./branch/tag using i.e. git checkout
-eval $(make env)
 make
 ```
 
