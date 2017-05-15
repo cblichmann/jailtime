@@ -51,6 +51,9 @@ var (
 	force = flag.Bool("force", false, "if an existing destination file cannot "+
 		"be\n"+
 		"                                  opened, remove it and try again")
+	removeDestination = flag.Bool("remove-destination", false, "remove each "+
+		"existing destination file before attempting to open it (contrast "+
+		"with --force)")
 	reflink = flag.Bool("reflink", false, "perform lightweight copies using "+
 		"CoW")
 	verbose = flag.Bool("verbose", false, "explain what is being done")
@@ -201,8 +204,9 @@ func UpdateChroot(chrootDir string, stmts spec.Statements) (err error) {
 				fmt.Printf("copy file: %s > %s\n", stmt.Source(), target)
 			}
 			if _, err = copy.File(stmt.Source(), target, &copy.Options{
-				Force:   *force,
-				Reflink: reflinkOpt,
+				Force:             *force,
+				Reflink:           reflinkOpt,
+				RemoveDestination: *removeDestination,
 			}); err != nil {
 				return
 			}

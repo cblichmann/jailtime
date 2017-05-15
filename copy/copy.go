@@ -51,7 +51,7 @@ const defaultBufSize = 1 << 20 // 1 MiB
 
 // File copies the file named in src to a file named in dest. It returns the
 // number of bytes written and an error, if any. File uses buffered I/O and
-// delegates to io.Copy to do the actual work. The copy behavior can be
+// delegates to io.Copy to do the actual work. The behavior can be optionally
 // influenced by setting options in opt.
 func File(src, dest string, opt *Options) (written int64, err error) {
 	if opt == nil {
