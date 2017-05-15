@@ -1,5 +1,5 @@
 /*
- * jailtime version 0.3
+ * jailtime version 0.4
  * Copyright (c)2015-2017 Christian Blichmann
  *
  * Import library utility
@@ -54,6 +54,8 @@ func readELFInterpreter(f *elf.File) string {
 }
 
 func ImportedLibraries(binary string) (deps []string, err error) {
+	// Note: The code below will likely work for the BSDs as well, but is
+	//       untested.
 	f, err := elf.Open(binary)
 	if err != nil {
 		return

@@ -1,5 +1,5 @@
 /*
- * jailtime version 0.3
+ * jailtime version 0.4
  * Copyright (c)2015-2017 Christian Blichmann
  *
  * File copy utility

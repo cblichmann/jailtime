@@ -1,6 +1,6 @@
 #!/usr/bin/env make
 #
-# jailtime version 0.3
+# jailtime version 0.4
 # Copyright (c)2015-2017 Christian Blichmann
 #
 # Makefile for POSIX compatible systems
@@ -26,6 +26,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 # Source Configuration
+version = 0.4
 go_package = blichmann.eu/code/jailtime
 go_programs = jailtime
 source_only_tgz = ../jailtime_0.3.orig.tar.xz
@@ -69,6 +70,24 @@ $(source_only_tgz): clean
 		"--exclude=$@" \
 		--exclude-vcs-ignores \
 		.??* *
+
+.PHONY: updatesourcemeta
+updatesourcemeta:
+	@echo "  [Update]    Version and copyright"
+	@for i in \
+		$(sources) \
+		$(this_dir)/debian/copyright \
+		$(this_dir)/debian/rules \
+		$(this_dir)/examples/*.jailspec \
+		$(this_dir)/LICENSE \
+		$(this_dir)/Makefile \
+		$(this_dir)/README.md; \
+	do \
+		sed -i \
+			-e 's/\(jailtime version\) [0-9]\+\.[0-9]\+/\1 $(version)/' \
+			-e 's/\(Copyright (c)[0-9]\+\)-[0-9]\+/\1-$(shell date +%Y)/' \
+			$$i; \
+	done
 
 # Create a source tarball without the debian/ subdirectory
 .PHONY: debsource
