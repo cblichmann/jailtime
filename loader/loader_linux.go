@@ -29,6 +29,7 @@ package loader // import "blichmann.eu/code/jailtime/loader"
 
 import (
 	"debug/elf"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -53,21 +54,33 @@ func readELFInterpreter(f *elf.File) string {
 	return ""
 }
 
-func ImportedLibraries(binary string) (deps []string, err error) {
-	// Note: The code below will likely work for the BSDs as well, but is
-	//       untested.
-	f, err := elf.Open(binary)
+func ImportedLibraries(filename string) (deps []string, err error) {
+	// Note: The code below will likely work for the BSDs/Solaris as well, but
+	//       is untested.
+	f, err := os.Open(filename)
 	if err != nil {
 		return
 	}
 	defer f.Close()
 
-	libs, err := f.ImportedLibraries()
+	b := make([]byte, len(elf.ELFMAG))
+	if _, err2 := f.Read(b); err2 != nil || string(b) != elf.ELFMAG {
+		// File is either too small or not an ELF
+		return
+	}
+
+	e, err := elf.NewFile(f)
+	if err != nil {
+		return
+	}
+	defer e.Close()
+
+	libs, err := e.ImportedLibraries()
 	if err != nil {
 		return
 	}
 
-	interp := readELFInterpreter(f)
+	interp := readELFInterpreter(e)
 	interpBase := filepath.Base(interp)
 	resolved := map[string]string{interpBase: interp}
 	paths := append([]string{filepath.Dir(interp)}, LdSearchPaths...)
@@ -83,7 +96,7 @@ func ImportedLibraries(binary string) (deps []string, err error) {
 					return false
 				}
 				defer g.Close()
-				if g.Class == f.Class && g.Machine == g.Machine {
+				if g.Class == e.Class && g.Machine == e.Machine {
 					newLibs, err := g.ImportedLibraries()
 					libs = append(libs, newLibs...)
 					return err == nil
