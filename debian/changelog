@@ -1,3 +1,11 @@
+jailtime (0.4-1) unstable; urgency=medium
+
+  * Implement macOS support
+  * Parse ELF files directly instead of using 'ldd'
+  * Implement "--remove-destination" flag
+
+ -- Christian Blichmann (Secure Email 2017/2018) <mail@blichmann.eu>  Fri, 19 May 2017 19:08:35 +0200
+
 jailtime (0.3-1) unstable; urgency=medium
 
   * Non-native packaging
