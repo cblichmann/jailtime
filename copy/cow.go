@@ -1,7 +1,7 @@
 // +build !linux
 
 /*
- * jailtime version 0.4
+ * jailtime version 0.5
  * Copyright (c)2015-2017 Christian Blichmann
  *
  * Copy-on-Write functionality

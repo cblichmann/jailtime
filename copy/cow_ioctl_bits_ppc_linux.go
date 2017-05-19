@@ -1,7 +1,7 @@
 // +build ppc64,ppc64le
 
 /*
- * jailtime version 0.4
+ * jailtime version 0.5
  * Copyright (c)2015-2017 Christian Blichmann
  *
  * Linux-specific ioctls

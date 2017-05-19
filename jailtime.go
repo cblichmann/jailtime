@@ -1,5 +1,5 @@
 /*
- * jailtime version 0.4
+ * jailtime version 0.5
  * Copyright (c)2015-2017 Christian Blichmann
  *
  * Create and manage chroot/jail environments
@@ -42,7 +42,7 @@ import (
 
 const (
 	VersionMajor = 0
-	VersionMinor = 4
+	VersionMinor = 5
 )
 
 var (
