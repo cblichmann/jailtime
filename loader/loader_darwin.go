@@ -92,7 +92,7 @@ func ImportedLibraries(filename string) (deps []string, err error) {
 	defer f.Close()
 
 	m := make([]byte, 4 /* uint32 */)
-	f.Read(b) // Ignore errors
+	f.Read(m) // Ignore errors
 	be := binary.BigEndian.Uint32(m[:])
 	le := binary.LittleEndian.Uint32(m[:])
 	if be != macho.Magic32 && be != macho.Magic64 &&

@@ -4,11 +4,6 @@ os:
     - linux
     - osx
 
-matrix:
-    include:
-        - os: osx
-          osx_image: xcode8.3
-
 go:
     - 1.8
     - tip
