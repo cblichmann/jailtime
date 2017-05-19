@@ -16,7 +16,7 @@ Table of Contents
   * [jailtime](README.md#jailtime-)
      * [Requirements](README.md#requirements)
      * [How to Build](README.md#how-to-build)
-        * [Build the old-fashioned Way](README.md#build-the-old-fashioned-way)
+        * [Build using Make](README.md#build-using-make)
      * [How to Use](README.md#how-to-use)
         * [Writing Jail Specifications](README.md#writing-jail-specifications)
         * [Entering a chroot](README.md#entering-a-chroot)
@@ -28,10 +28,10 @@ Table of Contents
 Requirements
 ------------
 
-  - Go version 1.3 or later
+  - Go version 1.7 or later
   - Git version 1.7 or later
   - Optional: GNU Make
-  - Currently only runs on 32-bit or 64-bit x86 Linux
+  - Currently only runs on 32-bit or 64-bit x86 Linux and macOS
 
 
 How to Build
@@ -42,7 +42,7 @@ General way to build from source via `go get`:
 go get blichmann.eu/code/jailtime
 ```
 
-### Build the old-fashioned Way
+### Build using Make
 
 To build from a specific revision/branch/tag, not using `go get`:
 ```bash
@@ -188,7 +188,6 @@ Bugs
 
   - Cannot specify the file permissions in jail specifications
   - Error messages could be more specific
-  - Does not run on OS X or any of the BSDs
 
 
 Similar Tools
@@ -201,7 +200,7 @@ These tools serve a similar purpose or are somewhat related:
     utility to copy files and their dependencies to a chroot directory.
   - [copy_exec from initramfs-tools](
     http://anonscm.debian.org/cgit/kernel/initramfs-tools.git/tree/hook-functions),
-    this also copies files and with their library dependencies.
+    this also copies files and their library dependencies.
   - [schroot](http://anonscm.debian.org/cgit/buildd-tools/schroot.git), used
     to execute commands or interactive shells in different chroot
     environments. It also supports BTRFS and LVM snapshots as well as
