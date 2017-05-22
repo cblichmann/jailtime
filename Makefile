@@ -64,7 +64,7 @@ $(binaries): $(sources)
 $(source_only_tgz): clean
 	@echo "  [Archive]   $@"
 	@tar -C "$(this_dir)" -caf "$@" \
-		--transform=s,^,jailtime-0.3/, \
+		--transform=s,^,jailtime-$(version)/, \
 		--exclude=.git/* --exclude=.git \
 		--exclude=debian/* --exclude=debian \
 		"--exclude=$@" \
