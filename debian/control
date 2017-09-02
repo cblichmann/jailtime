@@ -8,7 +8,7 @@ Homepage: https://github.com/cblichmann/jailtime
 
 Package: jailtime
 Architecture: any
-Depends: ${shlibs:Depends},${misc:Depends}
+Depends: ${misc:Depends}
 Description: Create and manage chroot/jail environments
  jailtime helps to
  - create restricted SSH logins that only allow scp or git, etc.

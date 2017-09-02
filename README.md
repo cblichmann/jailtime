@@ -30,6 +30,7 @@ Requirements
 
   - Go version 1.7 or later
   - Git version 1.7 or later
+  - Optional: CDBS (to build the Debian packages)
   - Optional: GNU Make
   - Currently only runs on 32-bit or 64-bit x86 Linux and macOS
 
