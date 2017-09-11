@@ -40,11 +40,6 @@ import (
 	"syscall"
 )
 
-const (
-	VersionMajor = 0
-	VersionMinor = 5
-)
-
 var (
 	help  = flag.Bool("help", false, "display this help and exit")
 	link  = flag.Bool("link", false, "hard link files instead of copying")
@@ -105,10 +100,10 @@ func processCommandLine() {
 		os.Exit(0)
 	}
 	if *version {
-		fmt.Printf("jailtime %d.%d\n"+
-			"Copyright (c)2015-2017 Christian Blichmann\n"+
-			"This software is BSD licensed, see the source for copying "+
-			"conditions.\n\n", VersionMajor, VersionMinor)
+		fmt.Printf("jailtime 0.5\n" +
+			"Copyright (c)2015-2017 Christian Blichmann\n" +
+			"This software is BSD licensed, see the source for copying " +
+			"conditions.\n\n")
 		os.Exit(0)
 	}
 	fatalHelp := fmt.Sprintf("Try '%s' --help for more information.",
