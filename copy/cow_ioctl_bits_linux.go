@@ -1,5 +1,5 @@
 /*
- * jailtime version 0.5
+ * jailtime version 0.6
  * Copyright (c)2015-2017 Christian Blichmann
  *
  * Linux-specific ioctls

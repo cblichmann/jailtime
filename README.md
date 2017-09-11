@@ -214,7 +214,7 @@ These tools serve a similar purpose or are somewhat related:
 Copyright/License
 -----------------
 
-jailtime version 0.5
+jailtime version 0.6
 Copyright (c)2015-2017 Christian Blichmann <jailtime@blichmann.eu>
 
 jailtime is licensed under a two-clause BSD license, see the LICENSE file

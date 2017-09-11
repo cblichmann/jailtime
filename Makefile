@@ -1,6 +1,6 @@
 #!/usr/bin/env make
 #
-# jailtime version 0.5
+# jailtime version 0.6
 # Copyright (c)2015-2017 Christian Blichmann
 #
 # Makefile for POSIX compatible systems
@@ -26,7 +26,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 # Source Configuration
-version = 0.5
+version = 0.6
 go_package = blichmann.eu/code/jailtime
 go_programs = jailtime
 source_only_tgz = ../jailtime_$(version).orig.tar.xz
