@@ -4,10 +4,10 @@ jailtime [![Build Status](https://api.travis-ci.org/cblichmann/jailtime.svg?bran
 jailtime is a command-line utility to create and manage chroot/jail
 environments.
 Why is this useful? jailtime helps to
-  - create restricted SSH logins that only allow scp or git, etc.
-  - build a Docker image without all the clutter of a fat base image based on
+  - Create restricted SSH logins that only allow scp or git, etc.
+  - Build a Docker image without all the clutter of a fat base image based on
     a full Linux distribution.
-  - restrict daemons into a filesystem sub-tree to enhance security.
+  - Restrict daemons into a filesystem sub-tree to enhance security.
 
 
 Table of Contents
@@ -30,9 +30,9 @@ Requirements
 
   - Go version 1.7 or later
   - Git version 1.7 or later
+  - Currently only runs on 32-bit or 64-bit x86 Linux and macOS
   - Optional: CDBS (to build the Debian packages)
   - Optional: GNU Make
-  - Currently only runs on 32-bit or 64-bit x86 Linux and macOS
 
 
 How to Build
@@ -187,8 +187,8 @@ serves a similar purpose.
 Bugs
 ----
 
-  - Cannot specify the file permissions in jail specifications
-  - Error messages could be more specific
+  - Cannot specify the file permissions in jail specifications ([#2](https://github.com/cblichmann/jailtime/issues/2))
+  - Error messages could be more specific ([#3](https://github.com/cblichmann/jailtime/issues/3))
 
 
 Similar Tools
@@ -215,7 +215,7 @@ Copyright/License
 -----------------
 
 jailtime version 0.5
-Copyright (c)2015-2017 Christian Blichmann <jailtime@blichmann.eu>
+Copyright © 2015-2017 Christian Blichmann <jailtime@blichmann.eu>
 
 jailtime is licensed under a two-clause BSD license, see the LICENSE file
 for details.
