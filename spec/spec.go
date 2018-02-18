@@ -1,6 +1,6 @@
 /*
  * jailtime version 0.6
- * Copyright (c)2015-2017 Christian Blichmann
+ * Copyright (c)2015-2018 Christian Blichmann
  *
  * Chroot specification
  *

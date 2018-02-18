@@ -215,7 +215,7 @@ Copyright/License
 -----------------
 
 jailtime version 0.6
-Copyright (c)2015-2017 Christian Blichmann <jailtime@blichmann.eu>
+Copyright (c)2015-2018 Christian Blichmann <jailtime@blichmann.eu>
 
 jailtime is licensed under a two-clause BSD license, see the LICENSE file
 for details.

@@ -1,6 +1,6 @@
 /*
  * jailtime version 0.6
- * Copyright (c)2015-2017 Christian Blichmann
+ * Copyright (c)2015-2018 Christian Blichmann
  *
  * Create and manage chroot/jail environments
  *
@@ -101,7 +101,7 @@ func processCommandLine() {
 	}
 	if *version {
 		fmt.Printf("jailtime 0.5\n" +
-			"Copyright (c)2015-2017 Christian Blichmann\n" +
+			"Copyright (c)2015-2018 Christian Blichmann\n" +
 			"This software is BSD licensed, see the source for copying " +
 			"conditions.\n\n")
 		os.Exit(0)
