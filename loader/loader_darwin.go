@@ -54,7 +54,7 @@ func init() {
 		"386":   macho.Cpu386,
 		"amd64": macho.CpuAmd64,
 		"arm":   macho.CpuArm,
-		//"arm64": macho.CpuArm64, // Not supported as of Go 1.8
+		"arm64": macho.CpuArm64,
 	}[runtime.GOARCH]; ok {
 		machoCpu = c
 	}
