@@ -30,7 +30,6 @@ package spec // import "blichmann.eu/code/jailtime/spec"
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"os"
 	"regexp"
 	"strconv"
@@ -138,17 +137,13 @@ func parseFromFile(filename string, includeDepth int) (stmts Statements,
 	}
 	defer f.Close()
 
-	r := bufio.NewReader(f)
+	s := bufio.NewScanner(f)
 	var line string
 	var lineStmts Statements
-	for lineNo := 1; ; lineNo++ {
-		line, err = r.ReadString('\n')
-		if err == io.EOF {
-			err = nil
-			break
-		} else if err != nil {
-			return
-		}
+	lineNo := 0
+	for s.Scan() {
+		lineNo++
+		line = s.Text()
 		lineStmts, err = parseSpecLine(filename, lineNo, line, includeDepth)
 		if err != nil {
 			return
@@ -157,6 +152,9 @@ func parseFromFile(filename string, includeDepth int) (stmts Statements,
 			stmts = append(stmts, lineStmts...)
 		}
 	}
+	//s.Err() will return nil if the scanner encountered io.EOF without other
+	//errors
+	err = s.Err()
 	return
 }
 
