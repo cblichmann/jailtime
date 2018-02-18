@@ -35,9 +35,11 @@ import (
 	"strings"
 )
 
-// Default loader config path
+// Default loader config path. This file contains a list of directories, one
+// per line, in which to search for libraries.
 const loaderConfig = "/etc/ld.so.conf"
 
+// Default search paths for the dynamic loader
 var LdSearchPaths []string = ParseLdConfig(loaderConfig)
 
 func ParseLdConfig(conf string) (paths []string) {
@@ -80,6 +82,10 @@ func ParseLdConfig(conf string) (paths []string) {
 	return
 }
 
+// FindLibraryFunc searches a list of directories for a file given by its base
+// name. Returns the first path for which the file exists and the usable
+// predicate function returns true. If nothing is found, an empty string will
+// be returned.
 func FindLibraryFunc(basename string, paths []string,
 	usable func(path string) bool) string {
 	for _, p := range paths {
