@@ -28,7 +28,7 @@ Table of Contents
 Requirements
 ------------
 
-  - Go version 1.7 or later
+  - Go version 1.9 or later
   - Git version 1.7 or later
   - Optional: CDBS (to build the Debian packages)
   - Optional: GNU Make
