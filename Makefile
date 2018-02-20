@@ -61,6 +61,12 @@ $(binaries): $(sources)
 	@ln -sf "$(this_dir)" "$(pkg_src)"
 	@go install $(go_package)
 
+.PHONY: test
+test: export GOPATH = $(project_go_path)
+test:
+	@echo "  [Test]"
+	@ go test ./...
+
 $(source_only_tgz): clean
 	@echo "  [Archive]   $@"
 	@tar -C "$(this_dir)" -caf "$@" \

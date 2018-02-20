@@ -9,4 +9,4 @@ go:
     - tip
 
 script:
-    - make
+    - make all test
