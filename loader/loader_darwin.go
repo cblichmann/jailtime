@@ -54,7 +54,8 @@ func init() {
 		"386":   macho.Cpu386,
 		"amd64": macho.CpuAmd64,
 		"arm":   macho.CpuArm,
-		"arm64": macho.CpuArm64,
+		// TODO(cblichmann): Enable once AArch64 is officially supported.
+		//"arm64": macho.CpuArm64,
 	}[runtime.GOARCH]; ok {
 		machoCpu = c
 	}
