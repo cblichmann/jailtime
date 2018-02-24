@@ -63,9 +63,9 @@ $(binaries): $(sources)
 
 .PHONY: test
 test: export GOPATH = $(project_go_path)
-test:
+test: $(binaries)
 	@echo "  [Test]"
-	@ go test ./...
+	@go test ./...
 
 $(source_only_tgz): clean
 	@echo "  [Archive]   $@"

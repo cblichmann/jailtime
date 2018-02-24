@@ -2,7 +2,7 @@
  * jailtime version 0.6
  * Copyright (c)2015-2018 Christian Blichmann
  *
- * Dynamic loader configuration parsing tests
+ * Tests for the Linux import library utility
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,35 +30,30 @@ package loader // import "blichmann.eu/code/jailtime/loader"
 import (
 	"os"
 	"reflect"
+	"sort"
 	"testing"
 )
 
-func TestParseLdconfig(t *testing.T) {
+func TestImportedLibaries(t *testing.T) {
 	wd, _ := os.Getwd()
 	defer os.Chdir(wd)
 	if err := os.Chdir("testdata"); err != nil {
 		t.Error(err)
 	}
 
-	have := make(map[string]bool)
-	paths := make([]string, 0, 0)
-	for _, v := range ParseLdConfig("ld.so.conf") {
-		t.Log(v)
-		if !have[v] {
-			paths = append(paths, v)
-			have[v] = true
-		}
+	paths, err := ImportedLibraries("netcat.elf")
+	if err != nil {
+		t.Error(err)
 	}
+	sort.Strings(paths)
 	expected := []string{
-		"/usr/local/lib/i386-linux-gnu",
-		"/lib/i386-linux-gnu",
-		"/usr/lib/i386-linux-gnu",
-		"/usr/local/lib/i686-linux-gnu",
-		"/lib/i686-linux-gnu",
-		"/usr/lib/i686-linux-gnu",
-		"/usr/local/lib/x86_64-linux-gnu",
-		"/lib/x86_64-linux-gnu",
-		"/usr/lib/x86_64-linux-gnu",
+		// Keep sorted
+		"/lib/x86_64-linux-gnu/libbsd.so.0",
+		"/lib/x86_64-linux-gnu/libc.so.6",
+		"/lib/x86_64-linux-gnu/libpthread.so.0",
+		"/lib/x86_64-linux-gnu/libresolv.so.2",
+		"/lib/x86_64-linux-gnu/librt.so.1",
+		"/lib64/ld-linux-x86-64.so.2",
 	}
 	if !reflect.DeepEqual(paths, expected) {
 		t.Errorf("expected %s, actual %s", expected, paths)
