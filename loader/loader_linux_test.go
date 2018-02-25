@@ -38,12 +38,12 @@ func TestImportedLibaries(t *testing.T) {
 	wd, _ := os.Getwd()
 	defer os.Chdir(wd)
 	if err := os.Chdir("testdata"); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	paths, err := ImportedLibraries("netcat.elf")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 	sort.Strings(paths)
 	expected := []string{

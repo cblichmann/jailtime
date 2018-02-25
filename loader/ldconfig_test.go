@@ -35,10 +35,10 @@ import (
 
 func TestParseLdconfig(t *testing.T) {
 	wd, _ := os.Getwd()
-	defer os.Chdir(wd)
 	if err := os.Chdir("testdata"); err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
+	defer os.Chdir(wd)
 
 	have := make(map[string]bool)
 	paths := make([]string, 0, 0)
