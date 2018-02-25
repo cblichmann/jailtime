@@ -111,10 +111,11 @@ Retry:
 	r, w := bufio.NewReader(s), bufio.NewWriter(t)
 	var copied int64
 	for written = 0; opt.Progress(written, total) && written < total; {
-		if copied, err = io.CopyN(w, r, opt.BufSize); copied != opt.BufSize {
+		copied, err = io.CopyN(w, r, opt.BufSize)
+		written += copied
+		if copied != opt.BufSize {
 			break
 		}
-		written += copied
 	}
 	if err == io.EOF {
 		err = nil
