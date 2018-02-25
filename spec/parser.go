@@ -152,8 +152,8 @@ func parseFromFile(filename string, includeDepth int) (stmts Statements,
 			stmts = append(stmts, lineStmts...)
 		}
 	}
-	//s.Err() will return nil if the scanner encountered io.EOF without other
-	//errors
+	// s.Err() will return nil if the scanner encountered io.EOF without other
+	// errors
 	err = s.Err()
 	return
 }

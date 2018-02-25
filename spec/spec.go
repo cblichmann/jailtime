@@ -23,7 +23,6 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
-
  */
 
 package spec // import "blichmann.eu/code/jailtime/spec"
@@ -157,6 +156,7 @@ func (r Run) Command() string {
 	return r.command
 }
 
+// Statements is a sortable slice of Statement elements.
 type Statements []Statement
 
 func statementToInt(s Statement) int {
