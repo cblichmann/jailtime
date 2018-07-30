@@ -165,6 +165,9 @@ func parseFromFile(filename string, includeDepth int) (stmts Statements,
 	return
 }
 
+// Parse parses a jailspec file, resolving all include directives. On success,
+// it returns a list of statements and a nil error. Otherwise it returns nil
+// for the list and the encountered error.
 func Parse(filename string) (Statements, error) {
 	return parseFromFile(filename, 0 /* Include depth */)
 }
