@@ -65,7 +65,8 @@ var (
 )
 
 func parseSpecLine(filename string, lineNo int, line string,
-	includeDepth int) (lineStmts Statements, err error) {
+	includer func(filename string) (Statements, error)) (
+	lineStmts Statements, err error) {
 	// Always strip white-space
 	line = strings.TrimSpace(line)
 
@@ -77,7 +78,9 @@ func parseSpecLine(filename string, lineNo int, line string,
 	if m := directivesRe.FindStringSubmatch(line); m != nil {
 		switch m[1] {
 		case "include":
-			lineStmts, err = parseFromFile(m[2], includeDepth+1)
+			if includer != nil {
+				lineStmts, err = includer(m[2]) //parseFromFile(m[2], includeDepth+1)
+			}
 		case "run":
 			lineStmts = Statements{NewRun(m[2])}
 		}
@@ -144,7 +147,11 @@ func parseFromFile(filename string, includeDepth int) (stmts Statements,
 	for s.Scan() {
 		lineNo++
 		line = s.Text()
-		lineStmts, err = parseSpecLine(filename, lineNo, line, includeDepth)
+		//lineStmts, err = parseSpecLine(filename, lineNo, line, includeDepth)
+		lineStmts, err = parseSpecLine(filename, lineNo, line,
+			func(filename string) (Statements, error) {
+				return parseFromFile(filename, includeDepth+1)
+			})
 		if err != nil {
 			return
 		}

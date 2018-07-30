@@ -37,7 +37,8 @@ const (
 )
 
 func checkParseSpecLineEmpty(line string, t *testing.T) {
-	if stmts, err := parseSpecLine(testFile, testLine, line, 0); err != nil {
+	t.Helper()
+	if stmts, err := parseSpecLine(testFile, testLine, line, nil); err != nil {
 		t.Errorf("expected no error, actual: %s", err)
 	} else if stmts != nil {
 		t.Errorf("expected empty stmts, actual: %s", stmts)
@@ -51,7 +52,7 @@ func TestParseSpecLineEmpty(t *testing.T) {
 
 func TestParseSpecLineDirective(t *testing.T) {
 	const expectCmd = "/bin/true"
-	stmts, err := parseSpecLine(testFile, testLine, "run "+expectCmd, 0)
+	stmts, err := parseSpecLine(testFile, testLine, "run "+expectCmd, nil)
 	if err != nil {
 		t.Errorf("expected no error, actual: %s", err)
 	}
@@ -62,5 +63,18 @@ func TestParseSpecLineDirective(t *testing.T) {
 		t.Error("expected type Run")
 	} else if cmd.Command() != expectCmd {
 		t.Errorf("expected %s, actual: %s", expectCmd, cmd.Command())
+	}
+
+	const expectInclude = "no_such.jailspec"
+	var includeFile string
+	stmts, err = parseSpecLine(testFile, testLine, "include "+expectInclude,
+		func(filename string) (Statements, error) {
+			includeFile = filename
+			return nil, nil
+		})
+	if err != nil {
+		t.Errorf("expected no error, actual: %s", err)
+	} else if includeFile != expectInclude {
+		t.Errorf("expected %s, actual: %s", expectInclude, includeFile)
 	}
 }
