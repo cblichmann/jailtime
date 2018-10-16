@@ -56,7 +56,7 @@ func readELFInterpreter(f *elf.File) string {
 
 func ImportedLibraries(filename string) (deps []string, err error) {
 	// Note: The code below will likely work for the BSDs/Solaris as well, but
-	//       is untested.
+	//       is untested on those patforms.
 	f, err := os.Open(filename)
 	if err != nil {
 		return
@@ -97,9 +97,10 @@ func ImportedLibraries(filename string) (deps []string, err error) {
 				}
 				defer g.Close()
 				if g.Class == e.Class && g.Machine == e.Machine {
-					newLibs, err := g.ImportedLibraries()
-					libs = append(libs, newLibs...)
-					return err == nil
+					return true
+					//newLibs, err := g.ImportedLibraries()
+					//libs = append(libs, newLibs...)
+					//return err == nil
 				}
 				return false
 			})
@@ -110,7 +111,6 @@ func ImportedLibraries(filename string) (deps []string, err error) {
 		if numResolved == len(resolved) {
 			break
 		}
-
 	}
 	for _, v := range resolved {
 		deps = append(deps, v)

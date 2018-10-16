@@ -29,7 +29,6 @@ package loader // import "blichmann.eu/code/jailtime/loader"
 
 import (
 	"os"
-	"reflect"
 	"sort"
 	"testing"
 )
@@ -46,16 +45,19 @@ func TestImportedLibaries(t *testing.T) {
 		t.Fatal(err)
 	}
 	sort.Strings(paths)
+	missing := len(paths)
 	expected := []string{
-		// Keep sorted
+		// This is the minimal list of libraries for the netcat binary that
+		// Ubuntu Trusty shows. On a more recent Debian, this additionally
+		// pulls in librt, libresolv and libpthread.
 		"/lib/x86_64-linux-gnu/libbsd.so.0",
 		"/lib/x86_64-linux-gnu/libc.so.6",
-		"/lib/x86_64-linux-gnu/libpthread.so.0",
-		"/lib/x86_64-linux-gnu/libresolv.so.2",
-		"/lib/x86_64-linux-gnu/librt.so.1",
 		"/lib64/ld-linux-x86-64.so.2",
 	}
-	if !reflect.DeepEqual(paths, expected) {
-		t.Errorf("expected %s, actual %s", expected, paths)
+	for _, p := range expected {
+		if sort.SearchStrings(paths, p) == missing {
+			t.Errorf("expected %s, which is missing", p)
+			return
+		}
 	}
 }

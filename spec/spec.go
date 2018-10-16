@@ -27,7 +27,7 @@
 
 package spec // import "blichmann.eu/code/jailtime/spec"
 
-// General file attributes: if these are not specified in the spec, these will
+// FileAttr General file attributes: if these are not specified in the spec, these will
 // default to root:root with mode 0755 for type Directory and root:root with
 // mode 0644 for RegularFile, Device and Link.
 type FileAttr struct {
