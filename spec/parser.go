@@ -48,21 +48,39 @@ var (
 	// Links:
 	//   /path/symlink_name -> /bin/bash
 	//   /path/hardlink => /bin/bash
-	linkRe = regexp.MustCompile("^(.*)\\s*(->|=>)\\s*(.*)$")
+	linkRe = regexp.MustCompile("^(.+)\\s*(->|=>)\\s*(.+)$")
 
 	// Directories:
 	//   /some/dir/
 	//   /var/lib/{all,of,these}/
-	dirRe = regexp.MustCompile("^([^{]+)(?:{([^}]+)})?(.*)/$")
+	//   /home/user/ 600
+	dirRe = regexp.MustCompile("^([^{]+)(?:{([^}]+)})?(.*)/(?:\\s+(\\d+))?$")
 
 	// Device files:
+	//  /dev/null c 1 3 666
 	//  /dev/console c 5 1
-	devRe = regexp.MustCompile("^(.*)\\s+([cbups])\\s+(\\d+)\\s+(\\d+)$")
+	devRe = regexp.MustCompile(
+		"^(.+)\\s+([cbups])\\s+(\\d+)\\s+(\\d+)(?:\\s+(\\d+))?$")
 
 	// Regular files:
-	//  /usr/bin/python
-	fileRe = regexp.MustCompile("^(.*?)(?:\\s+(.*))?$")
+	//  /bin/bash              # Copy to /bin/bash, original permissions
+	//  /bin/dash /bin/sh      # Copy to /bin/sh, original permissions
+	//  /usr/bin/python 755    # File mode is 755
+	// Special cases:
+	//  /Users/John\ Doe/cfg.txt /private/etc/motd 644  # Escaping, mode 644
+	//  /tmp/cache755 /755     # File name is "755" in chroot dir
+	//  /tmp/cache755 755 755  # File name is "755" in chroot dir, mode 755
+	fileRe = regexp.MustCompile("^(.+?)(?:\\s+(.+?))?(?:\\s+(\\d+))?$")
 )
+
+// parseMode parses an octal file mode into a positive integer. Returns -1 on
+// error.
+func parseMode(s string) int {
+	if mode, err := strconv.ParseInt(s, 8, 16); err == nil {
+		return int(mode)
+	}
+	return -1
+}
 
 func parseSpecLine(filename string, lineNo int, line string,
 	includer func(filename string) (Statements, error)) (
@@ -79,7 +97,7 @@ func parseSpecLine(filename string, lineNo int, line string,
 		switch m[1] {
 		case "include":
 			if includer != nil {
-				lineStmts, err = includer(m[2]) //parseFromFile(m[2], includeDepth+1)
+				lineStmts, err = includer(m[2])
 			}
 		case "run":
 			lineStmts = Statements{NewRun(m[2])}
@@ -88,12 +106,22 @@ func parseSpecLine(filename string, lineNo int, line string,
 		lineStmts = Statements{NewLink(m[3], strings.TrimSpace(m[1]),
 			m[2] == "=>")}
 	} else if m := dirRe.FindStringSubmatch(line); m != nil {
+		mode := -1
+		if rawMode := m[4]; len(rawMode) > 0 {
+			if mode = parseMode(rawMode); mode < 0 {
+				return nil, fmt.Errorf("%s:%d: invalid directory mode: %s",
+					filename, lineNo, rawMode)
+			}
+		}
 		comps := strings.Split(m[2], ",")
 		lineStmts = make(Statements, len(comps))
 		for i, comp := range comps {
-			lineStmts[i] = NewDirectory(m[1] + strings.TrimSpace(comp) + m[3])
+			d := NewDirectory(m[1] + strings.TrimSpace(comp) + m[3])
+			d.fileAttr.Mode = mode
+			lineStmts[i] = d
 		}
 	} else if m := devRe.FindStringSubmatch(line); m != nil {
+		source := m[1]
 		type_ := 0
 		switch m[2][0] {
 		case 'c':
@@ -108,17 +136,36 @@ func parseSpecLine(filename string, lineNo int, line string,
 			type_ = syscall.S_IFSOCK
 		}
 		major, _ := strconv.Atoi(m[3])
-		minor, _ := strconv.Atoi(m[3])
-		d := NewDevice(m[1], type_, major, minor)
+		minor, _ := strconv.Atoi(m[4])
+		mode := -1
+		if rawMode := m[5]; len(rawMode) > 0 {
+			if mode = parseMode(rawMode); mode < 0 {
+				return nil, fmt.Errorf("%s:%d: invalid file mode: %s", filename,
+					lineNo, rawMode)
+			}
+		}
+		d := NewDevice(source, type_, major, minor)
+		d.fileAttr.Mode = mode
+		fmt.Println(d)
 		lineStmts = Statements{d}
 	} else if m := fileRe.FindStringSubmatch(line); m != nil {
 		// From here on we should only be left with regular files
-		f := RegularFile{source: m[1]}
-		if len(m[2]) == 0 {
-			f.target = m[1]
-		} else {
-			f.target = m[2]
+		source, target, rawMode := m[1], m[2], m[3]
+		fmt.Println(source, target, rawMode)
+		mode := -1
+		if len(rawMode) > 0 { // Three arguments
+			if mode = parseMode(rawMode); mode < 0 {
+				return nil, fmt.Errorf("%s:%d: invalid file mode: %s", filename,
+					lineNo, rawMode)
+			}
+		} else if len(target) == 0 {
+			target = source
+		} else if mode = parseMode(target); mode >= 0 {
+			// Two, but second parses as number
+			target = source
 		}
+		f := NewRegularFile(source, target)
+		f.fileAttr.Mode = mode
 		lineStmts = Statements{f}
 	} else {
 		err = fmt.Errorf("%s:%d: invalid spec statement: %s", filename,
@@ -147,7 +194,6 @@ func parseFromFile(filename string, includeDepth int) (stmts Statements,
 	for s.Scan() {
 		lineNo++
 		line = s.Text()
-		//lineStmts, err = parseSpecLine(filename, lineNo, line, includeDepth)
 		lineStmts, err = parseSpecLine(filename, lineNo, line,
 			func(filename string) (Statements, error) {
 				return parseFromFile(filename, includeDepth+1)

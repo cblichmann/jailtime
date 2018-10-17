@@ -28,6 +28,7 @@
 package spec // import "blichmann.eu/code/jailtime/spec"
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -45,21 +46,100 @@ func checkParseSpecLineEmpty(line string, t *testing.T) {
 	}
 }
 
+func checkParseSpecLineSingleStmt(line string, t *testing.T) Statement {
+	stmts, err := parseSpecLine(testFile, testLine, line, nil)
+	if err != nil {
+		t.Errorf("expected no error, actual: %s", err)
+	}
+	if n := len(stmts); n != 1 {
+		t.Fatalf("expected single statement, actual: %d", n)
+	}
+	return stmts[0]
+}
+
 func TestParseSpecLineEmpty(t *testing.T) {
 	checkParseSpecLineEmpty("", t)
 	checkParseSpecLineEmpty("  # Comment, but empty", t)
 }
 
+func TestParseSpecLineRegularFile(t *testing.T) {
+	const (
+		expectSource       = "/some/file"
+		expectTarget       = "/some/target"
+		expectTargetNumber = "/600"
+		expectModeUnset    = -1
+		expectMode         = 0600
+	)
+
+	// /some/file
+	stmt := checkParseSpecLineSingleStmt(expectSource, t)
+	if f, ok := stmt.(RegularFile); !ok {
+		t.Error("expected type RegularFile")
+	} else if source := f.Source(); source != expectSource {
+		t.Errorf("expected %s, actual: %s", expectSource, source)
+	} else if target := f.Target(); target != source {
+		t.Errorf("expected %s, actual: %s", source, target)
+	} else if mode := f.FileAttr().Mode; mode != expectModeUnset {
+		t.Errorf("expected %o, actual: %o", expectModeUnset, mode)
+	}
+
+	// /some/file 600
+	stmt = checkParseSpecLineSingleStmt(fmt.Sprintf("%s %o", expectSource,
+		expectMode), t)
+	if f, ok := stmt.(RegularFile); !ok {
+		t.Error("expected type RegularFile")
+	} else if source := f.Source(); source != expectSource {
+		t.Errorf("expected %s, actual: %s", expectSource, source)
+	} else if target := f.Target(); target != source {
+		t.Errorf("expected %s, actual: %s", source, target)
+	} else if mode := f.FileAttr().Mode; mode != expectMode {
+		t.Errorf("expected %o, actual: %o", expectMode, mode)
+	}
+
+	// /some/file /some/target
+	stmt = checkParseSpecLineSingleStmt(fmt.Sprintf("%s %s", expectSource,
+		expectTarget), t)
+	if f, ok := stmt.(RegularFile); !ok {
+		t.Error("expected type RegularFile")
+	} else if source := f.Source(); source != expectSource {
+		t.Errorf("expected %s, actual: %s", expectSource, source)
+	} else if target := f.Target(); target != expectTarget {
+		t.Errorf("expected %s, actual: %s", expectTarget, target)
+	} else if mode := f.FileAttr().Mode; mode != expectModeUnset {
+		t.Errorf("expected %o, actual: %o", expectModeUnset, mode)
+	}
+
+	// /some/file /600
+	stmt = checkParseSpecLineSingleStmt(fmt.Sprintf("%s %s", expectSource,
+		expectTargetNumber), t)
+	if f, ok := stmt.(RegularFile); !ok {
+		t.Error("expected type RegularFile")
+	} else if source := f.Source(); source != expectSource {
+		t.Errorf("expected %s, actual: %s", expectSource, source)
+	} else if target := f.Target(); target != expectTargetNumber {
+		t.Errorf("expected %s, actual: %s", expectTargetNumber, target)
+	} else if mode := f.FileAttr().Mode; mode != expectModeUnset {
+		t.Errorf("expected %o, actual: %o", expectModeUnset, mode)
+	}
+
+	// /some/file /some/target 600
+	stmt = checkParseSpecLineSingleStmt(fmt.Sprintf("%s %s %o", expectSource,
+		expectTarget, expectMode), t)
+	if f, ok := stmt.(RegularFile); !ok {
+		t.Error("expected type RegularFile")
+	} else if source := f.Source(); source != expectSource {
+		t.Errorf("expected %s, actual: %s", expectSource, source)
+	} else if target := f.Target(); target != expectTarget {
+		t.Errorf("expected %s, actual: %s", expectTarget, target)
+	} else if mode := f.FileAttr().Mode; mode != expectMode {
+		t.Errorf("expected %o, actual: %o", expectMode, mode)
+	}
+}
+
 func TestParseSpecLineDirective(t *testing.T) {
 	const expectCmd = "/bin/true"
-	stmts, err := parseSpecLine(testFile, testLine, "run "+expectCmd, nil)
-	if err != nil {
-		t.Errorf("expected no error, actual: %s", err)
-	}
-	if n := len(stmts); n != 1 {
-		t.Errorf("expected single statement, actual: %d", n)
-	}
-	if cmd, ok := stmts[0].(Run); !ok {
+	stmt := checkParseSpecLineSingleStmt("run "+expectCmd, t)
+	if cmd, ok := stmt.(Run); !ok {
 		t.Error("expected type Run")
 	} else if cmd.Command() != expectCmd {
 		t.Errorf("expected %s, actual: %s", expectCmd, cmd.Command())
@@ -67,7 +147,7 @@ func TestParseSpecLineDirective(t *testing.T) {
 
 	const expectInclude = "no_such.jailspec"
 	var includeFile string
-	stmts, err = parseSpecLine(testFile, testLine, "include "+expectInclude,
+	_, err := parseSpecLine(testFile, testLine, "include "+expectInclude,
 		func(filename string) (Statements, error) {
 			includeFile = filename
 			return nil, nil
