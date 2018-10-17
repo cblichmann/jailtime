@@ -119,24 +119,29 @@ Instead of creating a copy, you can also create a (sym-)link:
 /bin/bash_again => /bin/bash
 ```
 
+To change file permissions inside the chroot, just append the file mode:
+```
+/home/myuser/ 600
+```
+
 Some programs will likely need a few special device files in order to function.
 They are created similar to normal files:
 ```
 # Creates the two devices /dev/null and /dev/zero.
+# For Linux device numbers see Documentation/admin-guide/devices.txt in the
+# kernel source tree.
 /dev/null c 1 3
 /dev/zero c 1 5
 ```
 Note: Device creation will most likely require jailtime to be run as root.
 
-To change file permissions inside the chroot, use a 'run' directive:
+Use a 'run' directive for advanced customizations of the chroot:
 ```
-# Careful not to omit the leading `.'
-run chmod 666 ./dev/null
+# Add a nice saying, careful not to omit the leading "./"
+run fortune > ./etc/motd
 ```
 The run directive will execute the text following the `run` keyword in a shell
 with the chroot directory set as its current directory.
-Note: In the future, you will be able to directly specify file permissions in
-the jail specification.
 
 Empty directories are created when the path name ends with a slash ('/'). There
 is also a shorthand to create multiple directories, similar to Bash syntax:
@@ -175,9 +180,13 @@ sudo systemd-nspawn -D chroot_dir/ /bin/bash
 This uses the same underlying technique as [Docker](https://www.docker.com/),
 Linux Containers (LXC), and allows for greater isolation.
 
-Another good option it to use [nsjail](https://google.github.io/nsjail/),
+Another good option is to use [nsjail](https://google.github.io/nsjail/),
 which uses a similar technique but also allows to restrict the chroot even
-further by using a seccomp-bpf based sandbox.
+further by using a seccomp-bpf based sandbox. Here is an example that changes
+both the current user and group to 99999:
+```bash
+sudo nsjail -Mo --chroot chroot_dir/ --user 999999 --group 99999 -- /bin/bash
+```
 
 FreeBSD derived systems also have the [jail](
 https://www.freebsd.org/cgi/man.cgi?query=jail&format=html) utility, which

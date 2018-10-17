@@ -24,7 +24,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 # Files/symlinks, this list is mostly based on GNU coreutils (as packaged in
-# Debian coreutils), omitting seldom used/obsucre ones and replacing a few
+# Debian coreutils), omitting seldom used/obscure ones and replacing a few
 # with the corresponding macOS userland equivalent.
 /bin/bash
 /bin/cat

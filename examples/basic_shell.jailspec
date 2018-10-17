@@ -23,6 +23,9 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+# Add an empty mount-point for /proc
+/proc/
+
 # Files/symlinks, this list is mostly based on GNU coreutils (as packaged in
 # Debian coreutils), omitting a few seldom used/obscure utilities.
 /bin/bash
