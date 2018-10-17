@@ -122,6 +122,7 @@ Instead of creating a copy, you can also create a (sym-)link:
 To change file permissions inside the chroot, just append the file mode:
 ```
 /home/myuser/ 600
+/home/myuser/myfile 600
 ```
 
 Some programs will likely need a few special device files in order to function.
@@ -196,7 +197,6 @@ serves a similar purpose.
 Bugs
 ----
 
-  - Cannot specify the file permissions in jail specifications
   - Error messages could be more specific
 
 
