@@ -1,5 +1,5 @@
 /*
- * jailtime version 0.6
+ * jailtime version 0.7
  * Copyright (c)2015-2018 Christian Blichmann
  *
  * Specification file parser
