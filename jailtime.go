@@ -100,7 +100,7 @@ func processCommandLine() {
 		os.Exit(0)
 	}
 	if *version {
-		fmt.Printf("jailtime 0.5\n" +
+		fmt.Printf("jailtime 0.6\n" +
 			"Copyright (c)2015-2018 Christian Blichmann\n" +
 			"This software is BSD licensed, see the source for copying " +
 			"conditions.\n\n")
@@ -119,7 +119,7 @@ func processCommandLine() {
 
 func ExpandLexical(stmts spec.Statements) spec.Statements {
 	todo := make(map[string]bool)
-	// Expect at least half of the files to expand at least to its dir
+	// Expect at least half of the files to expand at least to their dir
 	expanded := make(spec.Statements, 0, 3*len(stmts)/2)
 	for _, s := range stmts {
 		var dir string
@@ -191,7 +191,11 @@ func UpdateChroot(chrootDir string, stmts spec.Statements) (err error) {
 			if *verbose {
 				fmt.Printf("create dir: %s\n", target)
 			}
-			if err = os.MkdirAll(target, 0755); err != nil {
+			mode := stmt.FileAttr().Mode
+			if mode < 0 {
+				mode = 0755
+			}
+			if err = os.MkdirAll(target, os.FileMode(mode)); err != nil {
 				return
 			}
 		case spec.RegularFile:
@@ -204,6 +208,9 @@ func UpdateChroot(chrootDir string, stmts spec.Statements) (err error) {
 				RemoveDestination: *removeDestination,
 			}); err != nil {
 				return
+			}
+			if mode := stmt.FileAttr().Mode; mode >= 0 {
+				err = os.Chmod(target, os.FileMode(mode))
 			}
 		case spec.Link:
 			linkName := stmt.Source()
@@ -244,6 +251,9 @@ func UpdateChroot(chrootDir string, stmts spec.Statements) (err error) {
 			if err = syscall.Mknod(target, uint32(stmt.Type()|0644), MakeDev(
 				stmt.Major(), stmt.Minor())); err != nil {
 				return
+			}
+			if mode := stmt.FileAttr().Mode; mode >= 0 {
+				err = os.Chmod(target, os.FileMode(mode))
 			}
 		case spec.Run:
 			if *verbose {

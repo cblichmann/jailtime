@@ -96,7 +96,6 @@ Retry:
 		return
 	} else {
 		t, err = os.Create(dest)
-		t.Chmod(fi.Mode())
 	}
 	if err != nil {
 		if opt.Force && !hardFail {
@@ -105,6 +104,10 @@ Retry:
 				goto Retry
 			}
 		}
+		return
+	}
+	err = t.Chmod(fi.Mode())
+	if err != nil {
 		return
 	}
 

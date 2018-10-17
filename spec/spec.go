@@ -27,9 +27,10 @@
 
 package spec // import "blichmann.eu/code/jailtime/spec"
 
-// FileAttr General file attributes: if these are not specified in the spec, these will
-// default to root:root with mode 0755 for type Directory and root:root with
-// mode 0644 for RegularFile, Device and Link.
+// FileAttr General file attributes: if these are not specified in the spec,
+// the file permissions of the source will be used for regular files. For
+// directories, the default mode is 755.
+// In all cases, user and group id default to the values of the current user.
 type FileAttr struct {
 	Uid  int // User id
 	Gid  int // Group id
@@ -66,7 +67,9 @@ type RegularFile struct {
 }
 
 func NewRegularFile(source, target string) RegularFile {
-	return RegularFile{source, targetChrootObj{target: target}}
+	return RegularFile{source, targetChrootObj{
+		target:   target,
+		fileAttr: FileAttr{Mode: -1}}}
 }
 
 func (r RegularFile) Source() string {
@@ -81,7 +84,9 @@ type Device struct {
 }
 
 func NewDevice(target string, type_, major, minor int) Device {
-	return Device{targetChrootObj{target: target}, type_, major, minor}
+	return Device{targetChrootObj{
+		target:   target,
+		fileAttr: FileAttr{Mode: -1}}, type_, major, minor}
 }
 
 func (d Device) Source() string {
@@ -105,7 +110,9 @@ type Directory struct {
 }
 
 func NewDirectory(target string) Directory {
-	return Directory{targetChrootObj{target: target}}
+	return Directory{targetChrootObj{
+		target:   target,
+		fileAttr: FileAttr{Mode: -1}}}
 }
 
 func (d Directory) Source() string {
