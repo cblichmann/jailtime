@@ -1,3 +1,12 @@
+jailtime (0.6-1) unstable; urgency=medium
+
+  * Update to newer Golang version (1.9)
+  * More robust file copy
+  * Support file permissions in jail specs
+  * Update documentation with example for nsjail
+
+ -- Christian Blichmann (Secure Email 2018/2019) <mail@blichmann.eu>  Thu, 18 Oct 2018 19:16:04 +0200
+
 jailtime (0.5-1) unstable; urgency=medium
 
   * Small packaging and CI fixes

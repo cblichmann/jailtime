@@ -97,10 +97,9 @@ func ImportedLibraries(filename string) (deps []string, err error) {
 				}
 				defer g.Close()
 				if g.Class == e.Class && g.Machine == e.Machine {
-					return true
-					//newLibs, err := g.ImportedLibraries()
-					//libs = append(libs, newLibs...)
-					//return err == nil
+					newLibs, err := g.ImportedLibraries()
+					libs = append(libs, newLibs...)
+					return err == nil
 				}
 				return false
 			})
