@@ -1,6 +1,7 @@
 jailtime (0.7-1) unstable; urgency=medium
 
   * New --dry-run option to print actions only
+  * Put run statements last, do not sort them
 
  -- Christian Blichmann (Secure Email 2018/2019) <mail@blichmann.eu>  Mon, 26 Nov 2018 23:24:34 +0100
 

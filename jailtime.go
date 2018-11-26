@@ -157,7 +157,7 @@ func ExpandLexical(stmts spec.Statements) spec.Statements {
 			dir = path.Dir(dir)
 		}
 	}
-	sort.Sort(expanded)
+	sort.Stable(expanded)
 	return expanded
 }
 

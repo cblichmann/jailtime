@@ -193,6 +193,9 @@ func (s Statements) Swap(i, j int) {
 
 func (s Statements) Less(i, j int) bool {
 	ii, ji := statementToInt(s[i]), statementToInt(s[j])
+	if _, ok := s[i].(Run); ok {
+		return false // Always sort run statements last
+	}
 	if ii < ji {
 		return true
 	}
