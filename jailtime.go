@@ -47,11 +47,14 @@ var (
 		"be\n"+
 		"                                  opened, remove it and try again")
 	removeDestination = flag.Bool("remove-destination", false, "remove each "+
-		"existing destination file before attempting to open it (contrast "+
+		"existing destination file before\n"+
+		"                                  attempting to open it (contrast "+
 		"with --force)")
 	reflink = flag.Bool("reflink", false, "perform lightweight copies using "+
 		"CoW")
 	verbose = flag.Bool("verbose", false, "explain what is being done")
+	dryRun  = flag.Bool("dry-run", false, "don't do anything, just print "+
+		"(implies --verbose)")
 	version = flag.Bool("version", false, "display version and exit")
 	// TODO(cblichmann): Implement these
 	//noClobber = flag.Bool("no-clobber", false, "do not overwrite existing "+
@@ -114,6 +117,10 @@ func processCommandLine() {
 	if flag.NArg() == 1 {
 		fatalf("missing destination operand after '%s'\n%s\n", flag.Arg(0),
 			fatalHelp)
+	}
+	if *dryRun {
+		// --dry-run implies verbose
+		*verbose = true
 	}
 }
 
@@ -188,12 +195,15 @@ func UpdateChroot(chrootDir string, stmts spec.Statements) (err error) {
 		target := path.Join(chrootDir, s.Target())
 		switch stmt := s.(type) {
 		case spec.Directory:
-			if *verbose {
-				fmt.Printf("create dir: %s\n", target)
-			}
 			mode := stmt.FileAttr().Mode
 			if mode < 0 {
 				mode = 0755
+			}
+			if *verbose {
+				fmt.Printf("create dir: %s mode 0%o\n", target, mode)
+				if *dryRun {
+					continue
+				}
 			}
 			if err = os.MkdirAll(target, os.FileMode(mode)); err != nil {
 				return
@@ -201,6 +211,9 @@ func UpdateChroot(chrootDir string, stmts spec.Statements) (err error) {
 		case spec.RegularFile:
 			if *verbose {
 				fmt.Printf("copy file: %s > %s\n", stmt.Source(), target)
+				if *dryRun {
+					continue
+				}
 			}
 			if _, err = copy.File(stmt.Source(), target, &copy.Options{
 				Force:             *force,
@@ -225,6 +238,9 @@ func UpdateChroot(chrootDir string, stmts spec.Statements) (err error) {
 			}
 			if *verbose {
 				fmt.Printf("%s: %s %s %s\n", action, target, arrow, linkName)
+				if *dryRun {
+					continue
+				}
 			}
 			if _, err = os.Stat(target); err == nil { // Link exists
 				if err = os.Remove(target); err != nil {
@@ -240,8 +256,12 @@ func UpdateChroot(chrootDir string, stmts spec.Statements) (err error) {
 				return
 			}
 		case spec.Device:
+			mode := stmt.FileAttr().Mode
 			if *verbose {
-				fmt.Printf("create device: %s\n", target)
+				fmt.Printf("create device: %s mode 0%o\n", target, mode)
+				if *dryRun {
+					continue
+				}
 			}
 			if _, err = os.Stat(target); err == nil { // Device exists
 				if err = os.Remove(target); err != nil {
@@ -252,12 +272,15 @@ func UpdateChroot(chrootDir string, stmts spec.Statements) (err error) {
 				stmt.Major(), stmt.Minor())); err != nil {
 				return
 			}
-			if mode := stmt.FileAttr().Mode; mode >= 0 {
+			if mode >= 0 {
 				err = os.Chmod(target, os.FileMode(mode))
 			}
 		case spec.Run:
 			if *verbose {
 				fmt.Printf("run in %s: %s\n", chrootDir, stmt.Command())
+				if *dryRun {
+					continue
+				}
 			}
 			cmd := exec.Command("/bin/sh", "-c", stmt.Command())
 			cmd.Dir = chrootDir

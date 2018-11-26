@@ -1,3 +1,9 @@
+jailtime (0.7-1) unstable; urgency=medium
+
+  * New --dry-run option to print actions only
+
+ -- Christian Blichmann (Secure Email 2018/2019) <mail@blichmann.eu>  Mon, 26 Nov 2018 23:24:34 +0100
+
 jailtime (0.6-1) unstable; urgency=medium
 
   * Update to newer Golang version (1.9)
