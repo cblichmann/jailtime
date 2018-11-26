@@ -58,7 +58,7 @@ $(binaries): export GOPATH = $(project_go_path)
 $(binaries): $(sources)
 	@echo "  [Build]     $@"
 	@mkdir -p "$(dir $(pkg_src))"
-	@ln -sf "$(this_dir)" "$(pkg_src)"
+	@ln -sft "$(dir $(pkg_src))" "$(this_dir)"
 	@go install $(go_package)
 
 .PHONY: test
