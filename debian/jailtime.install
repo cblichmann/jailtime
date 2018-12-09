@@ -1,3 +1,4 @@
 bin/jailtime /usr/bin/
 examples/ /usr/share/doc/jailtime/
 README.md /usr/share/doc/jailtime/
+man/jailtime.1 /usr/share/man/man1/

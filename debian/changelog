@@ -1,8 +1,9 @@
 jailtime (0.8-1) unstable; urgency=medium
 
-  * Non-maintainer upload.
+  * Include a simple man(1) page
+  * Improve Debian packaging to fix Lintian warnings
 
- -- Christian Blichmann (Secure Email 2018/2019) <mail@blichmann.eu>  Sun, 09 Dec 2018 18:05:40 +0100
+ -- Christian Blichmann (Secure Email 2018/2019) <mail@blichmann.eu>  Sun, 09 Dec 2018 22:14:40 +0100
 
 jailtime (0.7-1) unstable; urgency=medium
 

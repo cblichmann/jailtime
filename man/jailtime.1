@@ -1,0 +1,69 @@
+.\" jailtime version 0.8
+.\" Copyright (c)2015-2018 Christian Blichmann
+.\"
+.\" Artisanal hard-craft man page for jailtime.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions are met:
+.\"     * Redistributions of source code must retain the above copyright
+.\"       notice, this list of conditions and the following disclaimer.
+.\"     * Redistributions in binary form must reproduce the above copyright
+.\"       notice, this list of conditions and the following disclaimer in the
+.\"       documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+.\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+.\" LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+.\" CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+.\" SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+.\" INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+.\" CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+.\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+
+.TH JAILTIME "1" "December 2018" "jailtime" "User Commands"
+.SH NAME
+jailtime \- Create and manage chroot/jail environments
+.SH SYNOPSIS
+.B jailtime
+[\fI\,OPTION\/\fR]... \fI\,FILE\/\fR... \fI\,TARGET\/\fR
+.SH DESCRIPTION
+Create or update the chroot environment in TARGET using specification
+FILEs. TARGET should be a directory and is created if it does not
+exist.
+.TP
+\fB\-\-dry\-run\fR
+don't do anything, just print (implies \fB\-\-verbose\fR)
+.TP
+\fB\-\-force\fR
+if an existing destination file cannot be
+opened, remove it and try again
+.TP
+\fB\-\-help\fR
+display this help and exit
+.TP
+\fB\-\-link\fR
+hard link files instead of copying
+.TP
+\fB\-\-reflink\fR
+perform lightweight copies using CoW
+.TP
+\fB\-\-remove\-destination\fR
+remove each existing destination file before
+attempting to open it (contrast with \fB\-\-force\fR)
+.TP
+\fB\-\-verbose\fR
+explain what is being done
+.TP
+\fB\-\-version\fR
+display version and exit
+.PP
+.SH "REPORTING BUGS"
+For bug reporting instructions, please see: <https://github.com/cblichmann/jailtime/issues>
+.SH COPYRIGHT
+Copyright \(co2015\-2018 Christian Blichmann
+This software is BSD licensed, see the LICENSE file for details.
+.SH "SEE ALSO"
+Full documentation at <https://github.com/cblichmann/jailtime/blob/v0.7/README.md>

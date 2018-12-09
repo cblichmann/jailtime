@@ -84,6 +84,7 @@ updatesourcemeta:
 		$(sources) \
 		$(this_dir)/debian/copyright \
 		$(this_dir)/debian/rules \
+		$(this_dir)/man/*.[1-9] \
 		$(this_dir)/examples/*.jailspec \
 		$(this_dir)/LICENSE \
 		$(this_dir)/Makefile \

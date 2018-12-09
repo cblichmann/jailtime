@@ -40,7 +40,7 @@ func TestImportedLibaries(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	paths, err := ImportedLibraries("netcat.elf")
+	paths, err := ImportedLibraries("nc.openbsd")
 	if err != nil {
 		t.Fatal(err)
 	}

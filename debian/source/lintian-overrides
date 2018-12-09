@@ -1,0 +1,4 @@
+# This is a test file for testing the ELF parser. It was taken from
+# the amd64 binary package "netcat-openbsd", version 1.195-1.
+# This was done to avoid a dependency on a C compiler/cgo.
+jailtime source: source-is-missing loader/testdata/nc.openbsd
