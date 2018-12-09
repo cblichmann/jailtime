@@ -31,6 +31,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -179,6 +180,15 @@ func parseFromFile(filename string, includeDepth int) (stmts Statements,
 		return
 	}
 
+	fromDir, err := filepath.EvalSymlinks(filename)
+	if err != nil {
+		return
+	}
+	if fromDir, err = filepath.Abs(fromDir); err != nil {
+		return
+	}
+	fromDir = filepath.Dir(fromDir)
+
 	f, err := os.Open(filename)
 	if err != nil {
 		return
@@ -194,7 +204,8 @@ func parseFromFile(filename string, includeDepth int) (stmts Statements,
 		line = s.Text()
 		lineStmts, err = parseSpecLine(filename, lineNo, line,
 			func(filename string) (Statements, error) {
-				return parseFromFile(filename, includeDepth+1)
+				return parseFromFile(filepath.Join(fromDir, filename),
+					includeDepth+1)
 			})
 		if err != nil {
 			return

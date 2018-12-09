@@ -31,7 +31,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 
 	"blichmann.eu/code/jailtime/action"
 	"blichmann.eu/code/jailtime/copy"
@@ -149,7 +149,7 @@ func updateChroot(chrootDir string, stmts spec.Statements) (err error) {
 		reflinkOpt = copy.ReflinkAlways
 	}
 	for _, s := range spec.ExpandLexical(expandWithDependencies(stmts)) {
-		target := path.Join(chrootDir, s.Target())
+		target := filepath.Join(chrootDir, s.Target())
 		if *verbose {
 			fmt.Println(s.Verbose())
 			if *dryRun {

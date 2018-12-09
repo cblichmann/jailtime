@@ -28,7 +28,7 @@
 package spec // import "blichmann.eu/code/jailtime/spec"
 
 import (
-	"path"
+	"path/filepath"
 	"sort"
 )
 
@@ -57,7 +57,7 @@ func ExpandLexical(stmts Statements) Statements {
 		done[target] = true
 		if dir != target {
 			expanded = append(expanded, s)
-			dir = path.Dir(target)
+			dir = filepath.Dir(target)
 		}
 		for dirLen := 0; dirLen != len(dir) && dir != "/"; {
 			if _, ok := done[dir]; !ok {
@@ -72,7 +72,7 @@ func ExpandLexical(stmts Statements) Statements {
 				done[dir] = true
 			}
 			dirLen = len(dir)
-			dir = path.Dir(dir)
+			dir = filepath.Dir(dir)
 		}
 	}
 	sort.Stable(expanded)
