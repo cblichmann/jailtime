@@ -1,5 +1,5 @@
 /*
- * jailtime version 0.7
+ * jailtime version 0.8
  * Copyright (c)2015-2018 Christian Blichmann
  *
  * Create and manage chroot/jail environments
@@ -102,7 +102,7 @@ func processCommandLine() {
 		os.Exit(0)
 	}
 	if *version {
-		fmt.Printf("jailtime 0.7\n" +
+		fmt.Printf("jailtime 0.8\n" +
 			"Copyright (c)2015-2018 Christian Blichmann\n" +
 			"This software is BSD licensed, see the LICENSE file for " +
 			"details.\n\n")

@@ -1,5 +1,5 @@
 /*
- * jailtime version 0.7
+ * jailtime version 0.8
  * Copyright (c)2015-2018 Christian Blichmann
  *
  * Actions for jailspec statements
