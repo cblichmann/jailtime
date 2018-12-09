@@ -27,16 +27,22 @@
 
 package spec // import "blichmann.eu/code/jailtime/spec"
 
+import "fmt"
+
 // FileAttr General file attributes: if these are not specified in the spec,
 // the file permissions of the source will be used for regular files. For
 // directories, the default mode is 755.
 // In all cases, user and group id default to the values of the current user.
 type FileAttr struct {
-	Uid  int // User id
-	Gid  int // Group id
+	UID  int // User id
+	GID  int // Group id
 	Mode int // File mode
 }
 
+const FileModeUnspecified = -1
+
+// Statement represents a single filesystem entity or command to be executed
+// inside the chroot.
 type Statement interface {
 	// Source outside the chroot, may be empty
 	Source() string
@@ -46,6 +52,10 @@ type Statement interface {
 
 	// Filesystem attributes, may return nil
 	FileAttr() *FileAttr
+
+	// Verbose returns a verbose description of the statement suitable for
+	// display.
+	Verbose() string
 }
 
 type targetChrootObj struct {
@@ -67,13 +77,16 @@ type RegularFile struct {
 }
 
 func NewRegularFile(source, target string) RegularFile {
-	return RegularFile{source, targetChrootObj{
-		target:   target,
-		fileAttr: FileAttr{Mode: -1}}}
+	return RegularFile{source, targetChrootObj{target: target,
+		fileAttr: FileAttr{Mode: FileModeUnspecified}}}
 }
 
 func (r RegularFile) Source() string {
 	return r.source
+}
+
+func (r RegularFile) Verbose() string {
+	return fmt.Sprintf("copy file: %s > %s", r.source, r.target)
 }
 
 type Device struct {
@@ -84,13 +97,17 @@ type Device struct {
 }
 
 func NewDevice(target string, type_, major, minor int) Device {
-	return Device{targetChrootObj{
-		target:   target,
-		fileAttr: FileAttr{Mode: -1}}, type_, major, minor}
+	return Device{targetChrootObj{target: target,
+		fileAttr: FileAttr{Mode: FileModeUnspecified}}, type_, major, minor}
 }
 
 func (d Device) Source() string {
 	return ""
+}
+
+func (d Device) Verbose() string {
+	return fmt.Sprintf("create device: %s mode 0%o", d.target,
+		d.fileAttr.Mode)
 }
 
 func (d Device) Type() int {
@@ -110,13 +127,16 @@ type Directory struct {
 }
 
 func NewDirectory(target string) Directory {
-	return Directory{targetChrootObj{
-		target:   target,
-		fileAttr: FileAttr{Mode: -1}}}
+	return Directory{targetChrootObj{target: target,
+		fileAttr: FileAttr{Mode: FileModeUnspecified}}}
 }
 
 func (d Directory) Source() string {
 	return ""
+}
+
+func (d Directory) Verbose() string {
+	return fmt.Sprintf("create dir: %s mode 0%o", d.target, d.fileAttr.Mode)
 }
 
 type Link struct {
@@ -131,6 +151,20 @@ func NewLink(source, target string, hardLink bool) Link {
 
 func (l Link) Source() string {
 	return l.source
+}
+
+func (l Link) Verbose() string {
+	var (
+		action, arrow string
+	)
+	if l.HardLink() {
+		action = "create hardlink"
+		arrow = "=>"
+	} else {
+		action = "create symlink"
+		arrow = "->"
+	}
+	return fmt.Sprintf("%s: %s %s %s", action, l.target, arrow, l.source)
 }
 
 func (l Link) HardLink() bool {
@@ -159,6 +193,10 @@ func (r Run) FileAttr() *FileAttr {
 	return nil
 }
 
+func (r Run) Verbose() string {
+	return fmt.Sprintf("run command: %s", r.Command())
+}
+
 func (r Run) Command() string {
 	return r.command
 }
@@ -177,9 +215,9 @@ func statementToInt(s Statement) int {
 	case Link:
 		return 40
 	case Run:
-		return 50
+		return 900
 	default:
-		return 100
+		return 1000
 	}
 }
 

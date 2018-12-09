@@ -106,7 +106,7 @@ func parseSpecLine(filename string, lineNo int, line string,
 		lineStmts = Statements{NewLink(m[3], strings.TrimSpace(m[1]),
 			m[2] == "=>")}
 	} else if m := dirRe.FindStringSubmatch(line); m != nil {
-		mode := -1
+		mode := 0755
 		if rawMode := m[4]; len(rawMode) > 0 {
 			if mode = parseMode(rawMode); mode < 0 {
 				return nil, fmt.Errorf("%s:%d: invalid directory mode: %s",
@@ -137,7 +137,7 @@ func parseSpecLine(filename string, lineNo int, line string,
 		}
 		major, _ := strconv.Atoi(m[3])
 		minor, _ := strconv.Atoi(m[4])
-		mode := -1
+		mode := FileModeUnspecified
 		if rawMode := m[5]; len(rawMode) > 0 {
 			if mode = parseMode(rawMode); mode < 0 {
 				return nil, fmt.Errorf("%s:%d: invalid file mode: %s", filename,
@@ -146,13 +146,11 @@ func parseSpecLine(filename string, lineNo int, line string,
 		}
 		d := NewDevice(source, type_, major, minor)
 		d.fileAttr.Mode = mode
-		fmt.Println(d)
 		lineStmts = Statements{d}
 	} else if m := fileRe.FindStringSubmatch(line); m != nil {
 		// From here on we should only be left with regular files
 		source, target, rawMode := m[1], m[2], m[3]
-		fmt.Println(source, target, rawMode)
-		mode := -1
+		mode := FileModeUnspecified
 		if len(rawMode) > 0 { // Three arguments
 			if mode = parseMode(rawMode); mode < 0 {
 				return nil, fmt.Errorf("%s:%d: invalid file mode: %s", filename,

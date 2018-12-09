@@ -28,16 +28,15 @@
 package main
 
 import (
-	"blichmann.eu/code/jailtime/copy"
-	"blichmann.eu/code/jailtime/loader"
-	"blichmann.eu/code/jailtime/spec"
 	"flag"
 	"fmt"
 	"os"
-	"os/exec"
 	"path"
-	"sort"
-	"syscall"
+
+	"blichmann.eu/code/jailtime/action"
+	"blichmann.eu/code/jailtime/copy"
+	"blichmann.eu/code/jailtime/loader"
+	"blichmann.eu/code/jailtime/spec"
 )
 
 var (
@@ -105,8 +104,8 @@ func processCommandLine() {
 	if *version {
 		fmt.Printf("jailtime 0.7\n" +
 			"Copyright (c)2015-2018 Christian Blichmann\n" +
-			"This software is BSD licensed, see the source for copying " +
-			"conditions.\n\n")
+			"This software is BSD licensed, see the LICENSE file for " +
+			"details.\n\n")
 		os.Exit(0)
 	}
 	fatalHelp := fmt.Sprintf("Try '%s' --help for more information.",
@@ -124,45 +123,8 @@ func processCommandLine() {
 	}
 }
 
-func ExpandLexical(stmts spec.Statements) spec.Statements {
-	todo := make(map[string]bool)
-	// Expect at least half of the files to expand at least to their dir
-	expanded := make(spec.Statements, 0, 3*len(stmts)/2)
-	for _, s := range stmts {
-		var dir string
-		switch stmt := s.(type) {
-		case spec.Directory:
-			dir = stmt.Target()
-			expanded = append(expanded, stmt)
-		case spec.Run:
-			// Do not deduplicate run statements
-			expanded = append(expanded, stmt)
-			continue
-		}
-		target := s.Target()
-		if _, ok := todo[target]; ok {
-			continue
-		}
-		todo[target] = true
-		if dir != target {
-			expanded = append(expanded, s)
-			dir = path.Dir(target)
-		}
-		for dirLen := 0; dirLen != len(dir); {
-			if _, ok := todo[dir]; !ok {
-				expanded = append(expanded, spec.NewDirectory(dir))
-				todo[dir] = true
-			}
-			dirLen = len(dir)
-			dir = path.Dir(dir)
-		}
-	}
-	sort.Stable(expanded)
-	return expanded
-}
-
-func ExpandWithDependencies(stmts spec.Statements) spec.Statements {
-	expanded := ExpandLexical(stmts)
+func expandWithDependencies(stmts spec.Statements) spec.Statements {
+	expanded := spec.ExpandLexical(stmts)
 	for _, s := range expanded {
 		switch stmt := s.(type) {
 		case spec.RegularFile:
@@ -170,125 +132,48 @@ func ExpandWithDependencies(stmts spec.Statements) spec.Statements {
 			if err != nil {
 				fatalf("%s\n", err)
 			}
+			attr := stmt.FileAttr()
 			for _, d := range deps {
-				expanded = append(expanded, spec.NewRegularFile(d, d))
+				f := spec.NewRegularFile(d, d)
+				*f.FileAttr() = *attr
+				expanded = append(expanded, f)
 			}
 		}
 	}
-	return ExpandLexical(expanded)
+	return expanded
 }
 
-func MakeDev(major, minor int) int {
-	// Taken from glibc's sys/sysmacros.h
-	return int(uint64(minor)&0xFF |
-		(uint64(major)&0xFFF)<<8 |
-		(uint64(minor) & ^uint64(0xFF))<<12 |
-		(uint64(major) & ^uint64(0xFFF))<<32)
-}
-
-func UpdateChroot(chrootDir string, stmts spec.Statements) (err error) {
+func updateChroot(chrootDir string, stmts spec.Statements) (err error) {
 	reflinkOpt := copy.ReflinkNo
 	if *reflink {
 		reflinkOpt = copy.ReflinkAlways
 	}
-	for _, s := range ExpandWithDependencies(stmts) {
+	for _, s := range spec.ExpandLexical(expandWithDependencies(stmts)) {
 		target := path.Join(chrootDir, s.Target())
+		if *verbose {
+			fmt.Println(s.Verbose())
+			if *dryRun {
+				continue
+			}
+		}
 		switch stmt := s.(type) {
 		case spec.Directory:
-			mode := stmt.FileAttr().Mode
-			if mode < 0 {
-				mode = 0755
-			}
-			if *verbose {
-				fmt.Printf("create dir: %s mode 0%o\n", target, mode)
-				if *dryRun {
-					continue
-				}
-			}
-			if err = os.MkdirAll(target, os.FileMode(mode)); err != nil {
-				return
-			}
+			err = action.Directory(target, stmt)
 		case spec.RegularFile:
-			if *verbose {
-				fmt.Printf("copy file: %s > %s\n", stmt.Source(), target)
-				if *dryRun {
-					continue
-				}
-			}
-			if _, err = copy.File(stmt.Source(), target, &copy.Options{
+			err = action.RegularFile(target, stmt, &copy.Options{
 				Force:             *force,
 				Reflink:           reflinkOpt,
 				RemoveDestination: *removeDestination,
-			}); err != nil {
-				return
-			}
-			if mode := stmt.FileAttr().Mode; mode >= 0 {
-				err = os.Chmod(target, os.FileMode(mode))
-			}
+			})
 		case spec.Link:
-			linkName := stmt.Source()
-			var action string
-			var arrow string
-			if stmt.HardLink() {
-				action = "create hardlink"
-				arrow = "=>"
-			} else {
-				action = "create symlink"
-				arrow = "->"
-			}
-			if *verbose {
-				fmt.Printf("%s: %s %s %s\n", action, target, arrow, linkName)
-				if *dryRun {
-					continue
-				}
-			}
-			if _, err = os.Stat(target); err == nil { // Link exists
-				if err = os.Remove(target); err != nil {
-					return
-				}
-			}
-			if stmt.HardLink() {
-				err = os.Link(linkName, target)
-			} else {
-				err = os.Symlink(linkName, target)
-			}
-			if err != nil {
-				return
-			}
+			err = action.Link(target, stmt)
 		case spec.Device:
-			mode := stmt.FileAttr().Mode
-			if *verbose {
-				fmt.Printf("create device: %s mode 0%o\n", target, mode)
-				if *dryRun {
-					continue
-				}
-			}
-			if _, err = os.Stat(target); err == nil { // Device exists
-				if err = os.Remove(target); err != nil {
-					return
-				}
-			}
-			if err = syscall.Mknod(target, uint32(stmt.Type()|0644), MakeDev(
-				stmt.Major(), stmt.Minor())); err != nil {
-				return
-			}
-			if mode >= 0 {
-				err = os.Chmod(target, os.FileMode(mode))
-			}
+			err = action.Device(target, stmt)
 		case spec.Run:
-			if *verbose {
-				fmt.Printf("run in %s: %s\n", chrootDir, stmt.Command())
-				if *dryRun {
-					continue
-				}
-			}
-			cmd := exec.Command("/bin/sh", "-c", stmt.Command())
-			cmd.Dir = chrootDir
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			if err = cmd.Run(); err != nil {
-				return
-			}
+			err = action.Run(target, stmt, chrootDir)
+		}
+		if err != nil {
+			return
 		}
 	}
 	return
@@ -308,7 +193,7 @@ func main() {
 		stmts = append(stmts, parsed...)
 	}
 
-	if err := UpdateChroot(flag.Arg(lastArg), stmts); err != nil {
+	if err := updateChroot(flag.Arg(lastArg), stmts); err != nil {
 		fatalf("%s\n", err)
 	}
 }

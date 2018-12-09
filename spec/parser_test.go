@@ -136,6 +136,28 @@ func TestParseSpecLineRegularFile(t *testing.T) {
 	}
 }
 
+func TestParseSpecLineDirectory(t *testing.T) {
+	const (
+		expectSource       = "/sub/dir/"
+		expectTarget       = "/sub/dir"
+		expectTargetNumber = "/755"
+		expectModeUnset    = -1
+		expectMode         = 0755
+	)
+
+	// /some/file
+	stmt := checkParseSpecLineSingleStmt(expectSource, t)
+	if d, ok := stmt.(Directory); !ok {
+		t.Error("expected type Directory")
+	} else if source := d.Source(); len(source) > 0 {
+		t.Errorf("expected \"\", actual: %s", source)
+	} else if target := d.Target(); target != expectTarget {
+		t.Errorf("expected %s, actual: %s", expectTarget, target)
+	} else if mode := d.FileAttr().Mode; mode != expectMode {
+		t.Errorf("expected %o, actual: %o", expectMode, mode)
+	}
+}
+
 func TestParseSpecLineDirective(t *testing.T) {
 	const expectCmd = "/bin/true"
 	stmt := checkParseSpecLineSingleStmt("run "+expectCmd, t)
