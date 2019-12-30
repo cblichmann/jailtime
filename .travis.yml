@@ -5,8 +5,8 @@ os:
     - osx
 
 go:
-    - 1.9
+    - 1.11
     - tip
 
 script:
-    - make all test
+    - make GOPATH= all test

@@ -1,7 +1,7 @@
 #!/usr/bin/env make
 #
 # jailtime version 0.8
-# Copyright (c)2015-2019 Christian Blichmann
+# Copyright (c)2015-2020 Christian Blichmann
 #
 # Makefile for POSIX compatible systems
 #
@@ -27,6 +27,7 @@
 
 # Source Configuration
 version = 0.8
+c_year ?= $(shell date +%Y)
 go_package = blichmann.eu/code/jailtime
 go_programs = jailtime
 source_only_tgz = ../jailtime_$(version).orig.tar.xz
@@ -34,8 +35,11 @@ source_only_tgz = ../jailtime_$(version).orig.tar.xz
 # Directories
 this_dir := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 bin_dir := $(this_dir)/bin
-pkg_src := $(this_dir)/src/$(go_package)
-export GOPATH := $(this_dir)
+
+export GOBIN := $(bin_dir)
+ifeq (3.81,$(firstword $(sort $(MAKE_VERSION) 3.81)))
+undefine GOPATH
+endif
 
 binaries := $(addprefix $(bin_dir)/,$(go_programs))
 sources := $(wildcard $(shell go list -f '{{.Dir}}/*.go' ./...))
@@ -43,26 +47,20 @@ sources := $(wildcard $(shell go list -f '{{.Dir}}/*.go' ./...))
 .PHONY: all
 all: $(binaries)
 
-.PHONY: env
-env:
-#	# Use like this: eval $(make env)
-	@echo "export GOPATH=$(project_go_path)"
-
 .PHONY: clean
 clean:
 	@echo "  [Clean]     Removing build artifacts"
-	@for i in bin pkg src; do rm -rf "$(this_dir)/$$i"; done
+	@rm -f $(binaries)
+	@rmdir "$(bin_dir)" || true
 
 $(binaries): $(sources)
 	@echo "  [Build]     $@"
-	@mkdir -p "$(dir $(pkg_src))"
-	@test -h "$(pkg_src)" || ln -s "$(this_dir)" "$(pkg_src)"
-	@cd "$(pkg_src)" && go install -tags "$(TAGS)" $(go_package)
+	@go install -tags "$(TAGS)" $(go_package)
 
 .PHONY: test
-test: $(binaries)
+test:
 	@echo "  [Test]"
-	@cd "$(pkg_src)" && go test ./...
+	@go test ./...
 
 $(source_only_tgz): clean
 	@echo "  [Archive]   $@"
@@ -87,9 +85,9 @@ updatesourcemeta:
 		$(this_dir)/Makefile \
 		$(this_dir)/README.md; \
 	do \
-		sed -i \
+		[ -f $$i ] && sed -i \
 			-e 's/\(jailtime version\) [0-9]\+\.[0-9]\+/\1 $(version)/' \
-			-e 's/\(Copyright (c)[0-9]\+\)-[0-9]\+/\1-$(shell date +%Y)/' \
+			-e 's/\(Copyright (c)[0-9]\+\)-[0-9]\+/\1-$(c_year)/' \
 			$$i; \
 	done
 
