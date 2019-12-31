@@ -1,11 +1,15 @@
-jailtime (0.8-1) unstable; urgency=medium
+jailtime (0.8-1.1) UNRELEASED; urgency=medium
 
+  [ Christian Blichmann (Secure Email 2018/2019) ]
   * Include a simple man(1) page
   * Improve Debian packaging to fix Lintian warnings
 
- -- Christian Blichmann (Secure Email 2018/2019) <mail@blichmann.eu>  Sun, 09 Dec 2018 22:14:40 +0100
+  [ Christian Blichmann ]
+  * Sign with newer GPG key
 
-jailtime (0.7-1) unstable; urgency=medium
+ -- Christian Blichmann <mail@blichmann.eu>  Tue, 31 Dec 2019 16:03:20 +0100
+
+jailtime (0.7-1) UNRELEASED; urgency=medium
 
   * New --dry-run option to print actions only
   * Put run statements last, do not sort them
@@ -13,7 +17,7 @@ jailtime (0.7-1) unstable; urgency=medium
 
  -- Christian Blichmann (Secure Email 2018/2019) <mail@blichmann.eu>  Mon, 26 Nov 2018 23:24:34 +0100
 
-jailtime (0.6-1) unstable; urgency=medium
+jailtime (0.6-1) UNRELEASED; urgency=medium
 
   * Update to newer Golang version (1.9)
   * More robust file copy
@@ -22,14 +26,14 @@ jailtime (0.6-1) unstable; urgency=medium
 
  -- Christian Blichmann (Secure Email 2018/2019) <mail@blichmann.eu>  Thu, 18 Oct 2018 19:16:04 +0200
 
-jailtime (0.5-1) unstable; urgency=medium
+jailtime (0.5-1) UNRELEASED; urgency=medium
 
   * Small packaging and CI fixes
   * Example jail files for Git shell and BorgBackup
 
  -- Christian Blichmann (Secure Email 2017/2018) <mail@blichmann.eu>  Mon, 11 Sep 2017 22:20:43 +0200
 
-jailtime (0.4-1) unstable; urgency=medium
+jailtime (0.4-1) UNRELEASED; urgency=medium
 
   * Implement macOS support
   * Parse ELF files directly instead of using 'ldd'
@@ -37,20 +41,20 @@ jailtime (0.4-1) unstable; urgency=medium
 
  -- Christian Blichmann (Secure Email 2017/2018) <mail@blichmann.eu>  Fri, 19 May 2017 19:08:35 +0200
 
-jailtime (0.3-1) unstable; urgency=medium
+jailtime (0.3-1) UNRELEASED; urgency=medium
 
   * Non-native packaging
 
  -- Christian Blichmann (Secure Email 2017/2018) <mail@blichmann.eu>  Tue, 09 May 2017 14:30:57 +0200
 
-jailtime (0.3) unstable; urgency=medium
+jailtime (0.3) UNRELEASED; urgency=medium
 
   * Update to newer Golang version
   * Better packaging
 
  -- Christian Blichmann <mail@blichmann.eu>  Tue, 14 Feb 2017 20:58:30 +0100
 
-jailtime (0.2) unstable; urgency=medium
+jailtime (0.2) UNRELEASED; urgency=medium
 
   * Initial release.
 
