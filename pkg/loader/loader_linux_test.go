@@ -1,10 +1,8 @@
-// +build !linux
-
 /*
  * jailtime version 0.8
  * Copyright (c)2015-2020 Christian Blichmann
  *
- * Copy-on-Write functionality
+ * Tests for the Linux import library utility
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -27,16 +25,39 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package copy // import "blichmann.eu/code/jailtime/copy"
+package loader
 
 import (
-	"errors"
+	"os"
+	"sort"
+	"testing"
 )
 
-func HaveCoW() bool {
-	return false
-}
+func TestImportedLibaries(t *testing.T) {
+	wd, _ := os.Getwd()
+	defer os.Chdir(wd)
+	if err := os.Chdir("testdata"); err != nil {
+		t.Fatal(err)
+	}
 
-func cloneFile(src, dest string) error {
-	return errors.New("not implemented")
+	paths, err := ImportedLibraries("nc.openbsd")
+	if err != nil {
+		t.Fatal(err)
+	}
+	sort.Strings(paths)
+	missing := len(paths)
+	expected := []string{
+		// This is the minimal list of libraries for the netcat binary that
+		// Ubuntu Trusty shows. On a more recent Debian, this additionally
+		// pulls in librt, libresolv and libpthread.
+		"/lib/x86_64-linux-gnu/libbsd.so.0",
+		"/lib/x86_64-linux-gnu/libc.so.6",
+		"/lib64/ld-linux-x86-64.so.2",
+	}
+	for _, p := range expected {
+		if sort.SearchStrings(paths, p) == missing {
+			t.Errorf("expected %s, which is missing", p)
+			return
+		}
+	}
 }

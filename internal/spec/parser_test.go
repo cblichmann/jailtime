@@ -25,7 +25,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package spec // import "blichmann.eu/code/jailtime/spec"
+package spec
 
 import (
 	"fmt"

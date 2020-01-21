@@ -2,7 +2,7 @@
  * jailtime version 0.8
  * Copyright (c)2015-2020 Christian Blichmann
  *
- * File copy utility
+ * Linux-specific ioctls
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -25,61 +25,38 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package copy // import "blichmann.eu/code/jailtime/copy"
+package copy
 
 import (
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"testing"
+	"syscall"
 )
 
-func TestFile(t *testing.T) {
-	const content string = "128 byte test content =========|" +
-		"=======|=======|=======|=======|" +
-		"=======|=======|=======|=======|" +
-		"=======|=======|=======|=======|"
+// From linux/ioctl.h
+const (
+	iocNrBits   = 8
+	iocTypeBits = 8
 
-	td, err := ioutil.TempDir("", "copy_test")
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log(td)
-	defer os.RemoveAll(td)
+	iocNrShift   = 0
+	iocTypeShift = iocNrShift + iocNrBits
+	iocSizeShift = iocTypeShift + iocTypeBits
+	iocDirShift  = iocSizeShift + iocSizeBits
+)
 
-	tf := filepath.Join(td, "testfile")
-	if err := ioutil.WriteFile(tf, []byte(content), 0666); err != nil {
-		t.Fatal(err)
-	}
-
-	var written int64
-
-	// Simple copy with default settings
-	cf := filepath.Join(td, "copiedfile")
-	written, err = File(tf, cf, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if written != int64(len(content)) {
-		t.Errorf("expected %d, actual %d", len(content), written)
-	}
-
-	// Copy with progress callback and small buffer, overwrite
-	numCalled := 0
-	written, err = File(tf, cf, &Options{
-		Progress: func(written, total int64) bool {
-			numCalled++
-			return true
-		},
-		BufSize: int64(len(content) / 2),
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if written != int64(len(content)) {
-		t.Errorf("expected %d, actual %d", len(content), written)
-	}
-	if numCalled < 2 {
-		t.Errorf("expected at least %d, actual %d", 2, numCalled)
-	}
+func ioc(dir, type_, nr, size int) uintptr {
+	return uintptr(dir<<iocDirShift | type_<<iocTypeShift | nr<<iocNrShift |
+		size<<iocSizeShift)
 }
+
+func iow(type_, nr, size int) uintptr {
+	return ioc(iocWrite, type_, nr, size)
+}
+
+func ioctl(fd int, request, argp uintptr) error {
+	if _, _, errno := syscall.Syscall(syscall.SYS_IOCTL, uintptr(fd), request,
+		argp); errno != 0 {
+		return errno
+	}
+	return nil
+}
+
+const btrfsIoCtlMagic = 0x94

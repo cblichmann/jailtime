@@ -25,7 +25,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package copy // import "blichmann.eu/code/jailtime/copy"
+package copy
 
 import (
 	"bufio"

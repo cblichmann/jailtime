@@ -24,7 +24,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package spec // import "blichmann.eu/code/jailtime/spec"
+
+package spec
 
 import (
 	"fmt"

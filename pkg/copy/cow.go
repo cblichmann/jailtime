@@ -1,8 +1,10 @@
+// +build !linux
+
 /*
  * jailtime version 0.8
  * Copyright (c)2015-2020 Christian Blichmann
  *
- * Linux-specific Copy-on-Write functionality
+ * Copy-on-Write functionality
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -25,29 +27,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package copy // import "blichmann.eu/code/jailtime/copy"
+package copy
 
 import (
-	"syscall"
+	"errors"
 )
 
 func HaveCoW() bool {
-	return true
+	return false
 }
 
 func cloneFile(src, dest string) error {
-	srcFd, err := syscall.Open(src, syscall.O_RDONLY, 0644)
-	if err != nil {
-		return err
-	}
-	defer syscall.Close(srcFd) // Safe to ignore close error on read-only files
-	destFd, err := syscall.Open(dest, syscall.O_WRONLY|syscall.O_CREAT, 0644)
-	if err != nil {
-		return err
-	}
-	defer syscall.Close(destFd)
-	return ioctl(destFd,
-		// BTRFS_IOC_CLONE, see linux/btrfs.h
-		iow(btrfsIoCtlMagic, 9, 4 /* sizeof(int) */),
-		uintptr(srcFd))
+	return errors.New("not implemented")
 }

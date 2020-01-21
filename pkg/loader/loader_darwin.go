@@ -25,7 +25,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package loader // import "blichmann.eu/code/jailtime/loader"
+package loader
 
 import (
 	"debug/macho"

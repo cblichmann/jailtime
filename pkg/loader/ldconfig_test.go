@@ -1,10 +1,8 @@
-// +build ppc64,ppc64le
-
 /*
  * jailtime version 0.8
  * Copyright (c)2015-2020 Christian Blichmann
  *
- * Linux-specific ioctls
+ * Dynamic loader configuration parsing tests
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -27,15 +25,42 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package copy // import "blichmann.eu/code/jailtime/copy"
+package loader
 
-// From linux/ioctl.h
-const (
-	iocSizeBits = 13
-	iocDirBits  = 3
-
-	// Direction bits. Different from generic case for OSF/1 compatibility.
-	iocNone  = 1
-	iocWrite = 2
-	iocRead  = 4
+import (
+	"os"
+	"reflect"
+	"testing"
 )
+
+func TestParseLdconfig(t *testing.T) {
+	wd, _ := os.Getwd()
+	if err := os.Chdir("testdata"); err != nil {
+		t.Fatal(err)
+	}
+	defer os.Chdir(wd)
+
+	have := make(map[string]bool)
+	paths := make([]string, 0, 0)
+	for _, v := range ParseLdConfig("ld.so.conf") {
+		t.Log(v)
+		if !have[v] {
+			paths = append(paths, v)
+			have[v] = true
+		}
+	}
+	expected := []string{
+		"/usr/local/lib/i386-linux-gnu",
+		"/lib/i386-linux-gnu",
+		"/usr/lib/i386-linux-gnu",
+		"/usr/local/lib/i686-linux-gnu",
+		"/lib/i686-linux-gnu",
+		"/usr/lib/i686-linux-gnu",
+		"/usr/local/lib/x86_64-linux-gnu",
+		"/lib/x86_64-linux-gnu",
+		"/usr/lib/x86_64-linux-gnu",
+	}
+	if !reflect.DeepEqual(paths, expected) {
+		t.Errorf("expected %s, actual %s", expected, paths)
+	}
+}

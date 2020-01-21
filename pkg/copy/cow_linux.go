@@ -2,7 +2,7 @@
  * jailtime version 0.8
  * Copyright (c)2015-2020 Christian Blichmann
  *
- * Tests for the Linux import library utility
+ * Linux-specific Copy-on-Write functionality
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -25,39 +25,29 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package loader // import "blichmann.eu/code/jailtime/loader"
+package copy
 
 import (
-	"os"
-	"sort"
-	"testing"
+	"syscall"
 )
 
-func TestImportedLibaries(t *testing.T) {
-	wd, _ := os.Getwd()
-	defer os.Chdir(wd)
-	if err := os.Chdir("testdata"); err != nil {
-		t.Fatal(err)
-	}
+func HaveCoW() bool {
+	return true
+}
 
-	paths, err := ImportedLibraries("nc.openbsd")
+func cloneFile(src, dest string) error {
+	srcFd, err := syscall.Open(src, syscall.O_RDONLY, 0644)
 	if err != nil {
-		t.Fatal(err)
+		return err
 	}
-	sort.Strings(paths)
-	missing := len(paths)
-	expected := []string{
-		// This is the minimal list of libraries for the netcat binary that
-		// Ubuntu Trusty shows. On a more recent Debian, this additionally
-		// pulls in librt, libresolv and libpthread.
-		"/lib/x86_64-linux-gnu/libbsd.so.0",
-		"/lib/x86_64-linux-gnu/libc.so.6",
-		"/lib64/ld-linux-x86-64.so.2",
+	defer syscall.Close(srcFd) // Safe to ignore close error on read-only files
+	destFd, err := syscall.Open(dest, syscall.O_WRONLY|syscall.O_CREAT, 0644)
+	if err != nil {
+		return err
 	}
-	for _, p := range expected {
-		if sort.SearchStrings(paths, p) == missing {
-			t.Errorf("expected %s, which is missing", p)
-			return
-		}
-	}
+	defer syscall.Close(destFd)
+	return ioctl(destFd,
+		// BTRFS_IOC_CLONE, see linux/btrfs.h
+		iow(btrfsIoCtlMagic, 9, 4 /* sizeof(int) */),
+		uintptr(srcFd))
 }

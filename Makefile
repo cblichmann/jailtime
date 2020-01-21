@@ -47,12 +47,12 @@ all: $(binaries)
 .PHONY: clean
 clean:
 	@echo "  [Clean]     Removing build artifacts"
-	@rm -f $(binaries)
+	@rm -f $(binaries) || true
 	@rmdir "$(bin_dir)" || true
 
 $(binaries): $(sources)
 	@echo "  [Build]     $@"
-	@(unset GOPATH; go install -tags "$(TAGS)" $(go_package))
+	@(unset GOPATH; go install -tags "$(TAGS)" $(go_package)/...)
 
 .PHONY: test
 test:

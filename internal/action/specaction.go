@@ -25,15 +25,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package action // import "blichmann.eu/code/jailtime/action"
+package action
 
 import (
 	"os"
 	"os/exec"
 	"syscall"
 
-	"blichmann.eu/code/jailtime/copy"
-	"blichmann.eu/code/jailtime/spec"
+	"blichmann.eu/code/jailtime/internal/spec"
+	"blichmann.eu/code/jailtime/pkg/copy"
 )
 
 func Directory(target string, d spec.Directory) error {

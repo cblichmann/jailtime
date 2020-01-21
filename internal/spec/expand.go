@@ -2,7 +2,7 @@
  * jailtime version 0.8
  * Copyright (c)2015-2020 Christian Blichmann
  *
- * Dynamic loader configuration parsing tests
+ * Statement expansion/deduplication
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -25,42 +25,56 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package loader // import "blichmann.eu/code/jailtime/loader"
+package spec
 
 import (
-	"os"
-	"reflect"
-	"testing"
+	"path/filepath"
+	"sort"
 )
 
-func TestParseLdconfig(t *testing.T) {
-	wd, _ := os.Getwd()
-	if err := os.Chdir("testdata"); err != nil {
-		t.Fatal(err)
-	}
-	defer os.Chdir(wd)
-
-	have := make(map[string]bool)
-	paths := make([]string, 0, 0)
-	for _, v := range ParseLdConfig("ld.so.conf") {
-		t.Log(v)
-		if !have[v] {
-			paths = append(paths, v)
-			have[v] = true
+// ExpandLexical deduplicates and sorts a list of statements while expanding
+// directory paths. Run statements are never deduplicated are kept in order of
+// appearace in the list.
+func ExpandLexical(stmts Statements) Statements {
+	done := make(map[string]bool)
+	// Expect at least half of the files to expand at least to their dir
+	expanded := make(Statements, 0, 3*len(stmts)/2)
+	for _, s := range stmts {
+		var dir string
+		switch stmt := s.(type) {
+		case Directory:
+			dir = stmt.Target()
+			expanded = append(expanded, stmt)
+		case Run:
+			// Do not deduplicate run statements
+			expanded = append(expanded, stmt)
+			continue
+		}
+		target := s.Target()
+		if _, ok := done[target]; ok {
+			continue
+		}
+		done[target] = true
+		if dir != target {
+			expanded = append(expanded, s)
+			dir = filepath.Dir(target)
+		}
+		for dirLen := 0; dirLen != len(dir) && dir != "/"; {
+			if _, ok := done[dir]; !ok {
+				d := NewDirectory(dir)
+				d.fileAttr = *s.FileAttr()
+				if _, ok := s.(RegularFile); ok {
+					if s.FileAttr().Mode == -1 {
+						d.fileAttr.Mode = 0755
+					}
+				}
+				expanded = append(expanded, d)
+				done[dir] = true
+			}
+			dirLen = len(dir)
+			dir = filepath.Dir(dir)
 		}
 	}
-	expected := []string{
-		"/usr/local/lib/i386-linux-gnu",
-		"/lib/i386-linux-gnu",
-		"/usr/lib/i386-linux-gnu",
-		"/usr/local/lib/i686-linux-gnu",
-		"/lib/i686-linux-gnu",
-		"/usr/lib/i686-linux-gnu",
-		"/usr/local/lib/x86_64-linux-gnu",
-		"/lib/x86_64-linux-gnu",
-		"/usr/lib/x86_64-linux-gnu",
-	}
-	if !reflect.DeepEqual(paths, expected) {
-		t.Errorf("expected %s, actual %s", expected, paths)
-	}
+	sort.Stable(expanded)
+	return expanded
 }

@@ -1,8 +1,10 @@
+// +build !windows
+
 /*
  * jailtime version 0.8
  * Copyright (c)2015-2020 Christian Blichmann
  *
- * Statement expansion/deduplication
+ * Device creation utilities
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -25,56 +27,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package spec // import "blichmann.eu/code/jailtime/spec"
+package action
 
-import (
-	"path/filepath"
-	"sort"
-)
-
-// ExpandLexical deduplicates and sorts a list of statements while expanding
-// directory paths. Run statements are never deduplicated are kept in order of
-// appearace in the list.
-func ExpandLexical(stmts Statements) Statements {
-	done := make(map[string]bool)
-	// Expect at least half of the files to expand at least to their dir
-	expanded := make(Statements, 0, 3*len(stmts)/2)
-	for _, s := range stmts {
-		var dir string
-		switch stmt := s.(type) {
-		case Directory:
-			dir = stmt.Target()
-			expanded = append(expanded, stmt)
-		case Run:
-			// Do not deduplicate run statements
-			expanded = append(expanded, stmt)
-			continue
-		}
-		target := s.Target()
-		if _, ok := done[target]; ok {
-			continue
-		}
-		done[target] = true
-		if dir != target {
-			expanded = append(expanded, s)
-			dir = filepath.Dir(target)
-		}
-		for dirLen := 0; dirLen != len(dir) && dir != "/"; {
-			if _, ok := done[dir]; !ok {
-				d := NewDirectory(dir)
-				d.fileAttr = *s.FileAttr()
-				if _, ok := s.(RegularFile); ok {
-					if s.FileAttr().Mode == -1 {
-						d.fileAttr.Mode = 0755
-					}
-				}
-				expanded = append(expanded, d)
-				done[dir] = true
-			}
-			dirLen = len(dir)
-			dir = filepath.Dir(dir)
-		}
-	}
-	sort.Stable(expanded)
-	return expanded
+// MakeDev creates a new device code using the given major and minor number.
+func MakeDev(major, minor int) int {
+	// Taken from glibc's sys/sysmacros.h
+	return int(uint64(minor)&0xFF |
+		(uint64(major)&0xFFF)<<8 |
+		(uint64(minor) & ^uint64(0xFF))<<12 |
+		(uint64(major) & ^uint64(0xFFF))<<32)
 }

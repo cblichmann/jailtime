@@ -1,10 +1,10 @@
-// +build !windows
+// +build ppc64,ppc64le
 
 /*
  * jailtime version 0.8
  * Copyright (c)2015-2020 Christian Blichmann
  *
- * Device creation utilities
+ * Linux-specific ioctls
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -27,13 +27,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package action // import "blichmann.eu/code/jailtime/action"
+package copy
 
-// MakeDev creates a new device code using the given major and minor number.
-func MakeDev(major, minor int) int {
-	// Taken from glibc's sys/sysmacros.h
-	return int(uint64(minor)&0xFF |
-		(uint64(major)&0xFFF)<<8 |
-		(uint64(minor) & ^uint64(0xFF))<<12 |
-		(uint64(major) & ^uint64(0xFFF))<<32)
-}
+// From linux/ioctl.h
+const (
+	iocSizeBits = 13
+	iocDirBits  = 3
+
+	// Direction bits. Different from generic case for OSF/1 compatibility.
+	iocNone  = 1
+	iocWrite = 2
+	iocRead  = 4
+)
