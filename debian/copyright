@@ -1,4 +1,7 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: jailtime
+Upstream-Contact: Christian Blichmann <mail@blichmann.eu>
+Source: https://github.com/cblichmann/jailtime
 
 Files: *
 Copyright: 2015-2017 Christian Blichmann <mail@blichmann.eu>
