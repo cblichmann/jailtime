@@ -1,4 +1,4 @@
-jailtime [![Build Status](https://api.travis-ci.org/cblichmann/jailtime.svg?branch=master)](https://travis-ci.org/cblichmann/jailtime)
+jailtime [![Build Status](https://github.com/cblichmann/jailtime/workflows/build/badge.svg)](https://github.com/cblichmann/jailtime/actions?query=workflow%3Abuild)
 ========
 
 jailtime is a command-line utility to create and manage chroot/jail
