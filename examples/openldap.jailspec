@@ -1,0 +1,82 @@
+# jailtime version 0.8
+# Copyright (c)2015-2021 Christian Blichmann
+#
+# OpenLDAP Jail Specification
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
+# Starting point for jailing OpenLDAP 2.4
+# TODO(cblichmann): Clean up and upload Dockerfile and build instructions
+/opt/openldap/lib/liblber-2.4.so.2.10.9
+/opt/openldap/lib/liblber.la
+/opt/openldap/lib/libldap-2.4.so.2.10.9
+/opt/openldap/lib/libldap.la
+/opt/openldap/lib/libldap_r-2.4.so.2.10.9
+/opt/openldap/lib/libldap_r.la
+/opt/openldap/bin/ldapsearch
+/opt/openldap/bin/ldapmodify
+/opt/openldap/bin/ldapdelete
+/opt/openldap/bin/ldapmodrdn
+/opt/openldap/bin/ldappasswd
+/opt/openldap/bin/ldapwhoami
+/opt/openldap/bin/ldapcompare
+/opt/openldap/bin/ldapexop
+/opt/openldap/bin/ldapurl
+/opt/openldap/libexec/slapd
+/opt/openldap/lib/liblber-2.4.so.2 -> liblber-2.4.so.2.10.9
+/opt/openldap/lib/liblber.so -> liblber-2.4.so.2.10.9
+/opt/openldap/lib/libldap-2.4.so.2 -> libldap-2.4.so.2.10.9
+/opt/openldap/lib/libldap.so -> libldap-2.4.so.2.10.9
+/opt/openldap/lib/libldap_r-2.4.so.2 -> libldap_r-2.4.so.2.10.9
+/opt/openldap/lib/libldap_r.so -> libldap_r-2.4.so.2.10.9
+/opt/openldap/bin/ldapadd -> ldapmodify
+/opt/openldap/sbin/slapadd -> ../libexec/slapd
+/opt/openldap/sbin/slapcat -> ../libexec/slapd
+/opt/openldap/sbin/slapdn -> ../libexec/slapd
+/opt/openldap/sbin/slapindex -> ../libexec/slapd
+/opt/openldap/sbin/slappasswd -> ../libexec/slapd
+/opt/openldap/sbin/slaptest -> ../libexec/slapd
+/opt/openldap/sbin/slapauth -> ../libexec/slapd
+/opt/openldap/sbin/slapacl -> ../libexec/slapd
+/opt/openldap/sbin/slapschema -> ../libexec/slapd
+/etc/opt/openldap/{slapd.d,tls}/
+/run/slapd/
+/var/{log,opt/openldap}/
+/lib/x86_64-linux-gnu/libnss_compat-2.24.so /lib/x86_64-linux-gnu/libnss_compat.so.2
+/lib/x86_64-linux-gnu/libgcc_s.so.1
+/usr/lib/gcc/x86_64-linux-gnu/6/libgcc_s.so.1 -> /lib/x86_64-linux-gnu/libgcc_s.so.1
+/opt/openldap/etc/openldap/schema/collective.ldif /etc/opt/openldap/schema/collective.ldif
+/opt/openldap/etc/openldap/schema/corba.ldif /etc/opt/openldap/schema/corba.ldif
+/opt/openldap/etc/openldap/schema/core.ldif /etc/opt/openldap/schema/core.ldif
+/opt/openldap/etc/openldap/schema/cosine.ldif /etc/opt/openldap/schema/cosine.ldif
+/opt/openldap/etc/openldap/schema/duaconf.ldif /etc/opt/openldap/schema/duaconf.ldif
+/opt/openldap/etc/openldap/schema/dyngroup.ldif /etc/opt/openldap/schema/dyngroup.ldif
+/opt/openldap/etc/openldap/schema/inetorgperson.ldif /etc/opt/openldap/schema/inetorgperson.ldif
+/opt/openldap/etc/openldap/schema/java.ldif /etc/opt/openldap/schema/java.ldif
+/opt/openldap/etc/openldap/schema/misc.ldif /etc/opt/openldap/schema/misc.ldif
+/opt/openldap/etc/openldap/schema/nis.ldif /etc/opt/openldap/schema/nis.ldif
+/opt/openldap/etc/openldap/schema/openldap.ldif /etc/opt/openldap/schema/openldap.ldif
+/opt/openldap/etc/openldap/schema/pmi.ldif /etc/opt/openldap/schema/pmi.ldif
+/opt/openldap/etc/openldap/schema/ppolicy.ldif /etc/opt/openldap/schema/ppolicy.ldif
+run touch ./run/slapd/slapd.args ./run/slapd/slapd.pid ./var/log/slapd.log
+run groupadd -R $PWD -r -g 30000 openldap
+run useradd -R $PWD -r -u 30000 -g 30000 -d /var/opt/openldap openldap
+run chown -R 30000:30000 ./etc/opt/openldap/slapd.d ./etc/opt/openldap/tls ./run/slapd ./var/log/slapd.log ./var/opt/openldap
