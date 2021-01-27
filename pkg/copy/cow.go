@@ -2,7 +2,7 @@
 
 /*
  * jailtime version 0.8
- * Copyright (c)2015-2020 Christian Blichmann
+ * Copyright (c)2015-2021 Christian Blichmann
  *
  * Copy-on-Write functionality
  *
