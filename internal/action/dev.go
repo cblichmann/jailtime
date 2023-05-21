@@ -2,7 +2,7 @@
 
 /*
  * jailtime version 0.8
- * Copyright (c)2015-2022 Christian Blichmann
+ * Copyright (c)2015-2023 Christian Blichmann
  *
  * Device creation utilities
  *
